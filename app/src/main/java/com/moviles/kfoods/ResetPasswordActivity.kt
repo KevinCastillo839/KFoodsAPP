@@ -2,11 +2,9 @@ package com.moviles.kfoods
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -18,73 +16,56 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
-import androidx.lifecycle.MutableLiveData
-import com.moviles.kfoods.ui.theme.KFoodsTheme
+import androidx.core.content.ContextCompat.startActivity
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.moviles.kfoods.viewmodel.AuthViewModel
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.ui.platform.LocalContext
-import com.moviles.kfoods.factory.AuthViewModelFactory
 
-
-class MainActivity : ComponentActivity() {
-
-
-    private val authViewModel: AuthViewModel by viewModels {
-        AuthViewModelFactory(application) // Usamos la fábrica actualizada aquí
-    }
+class ResetPasswordActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
-            KFoodsTheme {
-                Scaffold(
-                    modifier = Modifier.fillMaxSize()
-                ) { innerPadding ->
-                    LoginScreen(
-                        modifier = Modifier.padding(innerPadding),
-                        authViewModel = authViewModel
-                    )
-                }
-            }
+            ResetPasswordScreen()
         }
     }
 }
-@Composable
-fun LoginScreen(
-    modifier: Modifier = Modifier,
-    authViewModel: AuthViewModel // <- agregar este parámetro
-) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    val loginResult by authViewModel.loginResult.observeAsState()
-    val errorMessage by authViewModel.errorMessage.observeAsState()
 
-    Box(modifier = modifier.fillMaxSize()) {
-        // Parte superior: imagen de fondo con logo centrado
+@Composable
+fun ResetPasswordScreen(authViewModel: AuthViewModel = viewModel()) {
+    var email by remember { mutableStateOf("") }
+    var token by remember { mutableStateOf("") }
+    var newPassword by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
+    var successMessage by remember { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf("") }
+    val context = LocalContext.current
+
+    // Caja de fondo con imagen y logo
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Parte superior: imagen de fondo
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(350.dp) // Altura fija para controlar mejor el traslape
+                .height(350.dp)
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
                 Image(
-                    painter = painterResource(id = R.drawable.image_main),
+                    painter = painterResource(id = R.drawable.image_main), // Imagen de fondo
                     contentDescription = "Imagen de fondo",
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
                 Image(
-                    painter = painterResource(id = R.drawable.logo),
+                    painter = painterResource(id = R.drawable.logo), // Logo centrado
                     contentDescription = "Logo circular",
                     modifier = Modifier
                         .size(100.dp)
@@ -94,11 +75,11 @@ fun LoginScreen(
             }
         }
 
-        // Parte inferior superpuesta
+        // Parte inferior: formulario de restablecimiento
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 300.dp) // Se superpone sobre la imagen
+                .padding(top = 300.dp)
                 .shadow(
                     elevation = 8.dp,
                     shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
@@ -107,9 +88,9 @@ fun LoginScreen(
                 .background(
                     brush = Brush.horizontalGradient(
                         colors = listOf(
-                            Color(0xFFFFE0B2), // Más oscuro a la izquierda
-                            Color(0xFFFFF3E0), // Centro
-                            Color(0xFFFFFBF5)  // Casi blanco a la derecha
+                            Color(0xFFFFE0B2),
+                            Color(0xFFFFF3E0),
+                            Color(0xFFFFFBF5)
                         )
                     ),
                     shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
@@ -117,29 +98,43 @@ fun LoginScreen(
                 .padding(horizontal = 24.dp, vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
-        )
-        {
+        ) {
             Text(
-                text = "¡Bienvenido!",
+                text = "Restablecer Contraseña",
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF1E1E1E)
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Inicie sesión para continuar.",
-                fontSize = 16.sp,
-                color = Color.Gray
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                label = { Text("Email") },
+                label = { Text("Correo electrónico") },
+                shape = RoundedCornerShape(12.dp),
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = token,
+                onValueChange = { token = it },
+                label = { Text("Token de recuperación") },
+                shape = RoundedCornerShape(12.dp),
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = newPassword,
+                onValueChange = { newPassword = it },
+                label = { Text("Nueva contraseña") },
+                visualTransformation = PasswordVisualTransformation(),
                 shape = RoundedCornerShape(12.dp),
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
@@ -147,22 +142,28 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                label = { Text("Contraseña") },
-                shape = RoundedCornerShape(12.dp),
-                visualTransformation = PasswordVisualTransformation(),
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
             Button(
                 onClick = {
-                    Log.d("LoginScreen", "Botón de inicio de sesión presionado con email: $email y password: $password")
-                    authViewModel.login(email, password)
+                    if (email.isNotEmpty() && token.isNotEmpty() && newPassword.isNotEmpty()) {
+                        isLoading = true
+                        authViewModel.resetPassword(email, token, newPassword,
+                            onSuccess = {
+                                isLoading = false
+                                successMessage = it
+                                errorMessage = ""
+                                val intent = Intent(context, MainActivity::class.java)
+                                context.startActivity(intent)
+
+                            },
+                            onError = {
+                                isLoading = false
+                                errorMessage = it
+                                successMessage = ""
+                            }
+                        )
+                    } else {
+                        errorMessage = "Por favor completa todos los campos."
+                    }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),
                 shape = RoundedCornerShape(12.dp),
@@ -171,7 +172,7 @@ fun LoginScreen(
                     .height(50.dp)
             ) {
                 Text(
-                    text = "Iniciar Sesión",
+                    text = "Restablecer Contraseña",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
@@ -180,22 +181,17 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            val context = LocalContext.current
-
-            TextButton(onClick = {
-                context.startActivity(Intent(context, ForgotPasswordActivity::class.java))
-            }) {
-                Text("¿Has olvidado tu contraseña?", color = Color.Gray)
+            if (isLoading) {
+                CircularProgressIndicator()
             }
 
-            TextButton(onClick = {
-                context.startActivity(Intent(context, RegisterActivity::class.java))
-            }) {
-                Text("¡Registrarse!", color = Color(0xFFFF5722))
+            successMessage.takeIf { it.isNotEmpty() }?.let {
+                Text(it, color = MaterialTheme.colorScheme.primary)
             }
 
-
+            errorMessage.takeIf { it.isNotEmpty() }?.let {
+                Text(it, color = MaterialTheme.colorScheme.error)
+            }
         }
     }
 }
-
