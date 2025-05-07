@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -38,7 +39,6 @@ class ResetPasswordActivity : ComponentActivity() {
         }
     }
 }
-
 @Composable
 fun ResetPasswordScreen(authViewModel: AuthViewModel = viewModel()) {
     var email by remember { mutableStateOf("") }
@@ -71,6 +71,11 @@ fun ResetPasswordScreen(authViewModel: AuthViewModel = viewModel()) {
                         .size(100.dp)
                         .align(Alignment.Center)
                         .clip(CircleShape)
+                        .clickable {
+                            // Acción al tocar el logo
+                            val intent = Intent(context, MainActivity::class.java)
+                            context.startActivity(intent)
+                        }
                 )
             }
         }
@@ -144,25 +149,34 @@ fun ResetPasswordScreen(authViewModel: AuthViewModel = viewModel()) {
 
             Button(
                 onClick = {
-                    if (email.isNotEmpty() && token.isNotEmpty() && newPassword.isNotEmpty()) {
-                        isLoading = true
-                        authViewModel.resetPassword(email, token, newPassword,
-                            onSuccess = {
-                                isLoading = false
-                                successMessage = it
-                                errorMessage = ""
-                                val intent = Intent(context, MainActivity::class.java)
-                                context.startActivity(intent)
-
-                            },
-                            onError = {
-                                isLoading = false
-                                errorMessage = it
-                                successMessage = ""
-                            }
-                        )
-                    } else {
-                        errorMessage = "Por favor completa todos los campos."
+                    // Validación de los campos
+                    when {
+                        email.isEmpty() || token.isEmpty() || newPassword.isEmpty() -> {
+                            errorMessage = "Por favor completa todos los campos."
+                        }
+                        !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches() -> {
+                            errorMessage = "El correo electrónico no es válido."
+                        }
+                        newPassword.length < 6 -> {
+                            errorMessage = "La contraseña debe tener al menos 6 caracteres."
+                        }
+                        else -> {
+                            isLoading = true
+                            authViewModel.resetPassword(email, token, newPassword,
+                                onSuccess = {
+                                    isLoading = false
+                                    successMessage = it
+                                    errorMessage = ""
+                                    val intent = Intent(context, MainActivity::class.java)
+                                    context.startActivity(intent)
+                                },
+                                onError = {
+                                    isLoading = false
+                                    errorMessage = it
+                                    successMessage = ""
+                                }
+                            )
+                        }
                     }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),
@@ -181,17 +195,42 @@ fun ResetPasswordScreen(authViewModel: AuthViewModel = viewModel()) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Mostrar mensaje de carga
             if (isLoading) {
                 CircularProgressIndicator()
             }
 
-            successMessage.takeIf { it.isNotEmpty() }?.let {
-                Text(it, color = MaterialTheme.colorScheme.primary)
+            // Mostrar mensaje de éxito
+            if (successMessage.isNotEmpty()) {
+                Toast.makeText(context, successMessage, Toast.LENGTH_SHORT).show()
             }
 
-            errorMessage.takeIf { it.isNotEmpty() }?.let {
-                Text(it, color = MaterialTheme.colorScheme.error)
+            // Mostrar mensaje de error
+            if (errorMessage.isNotEmpty()) {
+                Text(errorMessage, color = MaterialTheme.colorScheme.error)
+            }
+
+            // Botón para regresar al MainActivity
+            Button(
+                onClick = {
+                    val intent = Intent(context, MainActivity::class.java)
+                    context.startActivity(intent)
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2196F3)),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+            ) {
+                Text(
+                    text = "Volver al Inicio",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
             }
         }
     }
 }
+
+

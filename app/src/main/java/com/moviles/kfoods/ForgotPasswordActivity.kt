@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -42,11 +43,12 @@ class ForgotPasswordActivity : ComponentActivity() {
 @Composable
 fun ForgotPasswordScreen(viewModel: AuthViewModel) {
     var email by remember { mutableStateOf("") }
+    var emailError by remember { mutableStateOf("") }
     val context = LocalContext.current
 
-    // Column con diseño de fondo e imagen
+    // Caja de fondo con imagen y logo
     Box(modifier = Modifier.fillMaxSize()) {
-        // Parte superior: imagen con logo
+        // Parte superior: imagen de fondo con logo
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -66,11 +68,16 @@ fun ForgotPasswordScreen(viewModel: AuthViewModel) {
                         .size(100.dp)
                         .align(Alignment.Center)
                         .clip(CircleShape)
+                        .clickable {
+                            // Acción al tocar el logo
+                            val intent = Intent(context, MainActivity::class.java)
+                            context.startActivity(intent)
+                        }
                 )
             }
         }
 
-        // Parte inferior: formulario
+        // Parte inferior: formulario de recuperación de contraseña
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -109,15 +116,28 @@ fun ForgotPasswordScreen(viewModel: AuthViewModel) {
                 label = { Text("Correo electrónico") },
                 shape = RoundedCornerShape(12.dp),
                 singleLine = true,
+                isError = emailError.isNotEmpty(),
                 modifier = Modifier.fillMaxWidth()
             )
+
+            // Mostrar mensaje de error si el correo no es válido
+            if (emailError.isNotEmpty()) {
+                Text(
+                    text = emailError,
+                    color = Color.Red,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
                 onClick = {
-                    if (email.isNotEmpty()) {
+                    if (validateEmail(email)) {
+                        emailError = ""
                         viewModel.forgotPassword(email)
+                    } else {
+                        emailError = "Por favor ingrese un correo electrónico válido"
                     }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),
@@ -128,6 +148,26 @@ fun ForgotPasswordScreen(viewModel: AuthViewModel) {
             ) {
                 Text(
                     text = "Enviar Correo",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Button(
+                onClick = {
+                    val intent = Intent(context, MainActivity::class.java)
+                    context.startActivity(intent)
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2196F3)),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+            ) {
+                Text(
+                    text = "Volver al Inicio",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
@@ -157,3 +197,8 @@ fun ForgotPasswordScreen(viewModel: AuthViewModel) {
         }
     }
 }
+
+fun validateEmail(email: String): Boolean {
+    return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+}
+

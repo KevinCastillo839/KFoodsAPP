@@ -8,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -53,6 +54,9 @@ fun RegisterScreen(authViewModel: AuthViewModel) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var nameError by remember { mutableStateOf("") }
+    var emailError by remember { mutableStateOf("") }
+    var passwordError by remember { mutableStateOf("") }
 
     val registrationResult by authViewModel.registrationResult.observeAsState()
     val errorMessage by authViewModel.errorMessage.observeAsState()
@@ -95,12 +99,17 @@ fun RegisterScreen(authViewModel: AuthViewModel) {
                     contentScale = ContentScale.Crop
                 )
                 Image(
-                    painter = painterResource(id = R.drawable.logo),
+                    painter = painterResource(id = R.drawable.logo), // Logo centrado
                     contentDescription = "Logo circular",
                     modifier = Modifier
                         .size(100.dp)
                         .align(Alignment.Center)
                         .clip(CircleShape)
+                        .clickable {
+                            // Acción al tocar el logo
+                            val intent = Intent(context, MainActivity::class.java)
+                            context.startActivity(intent)
+                        }
                 )
             }
         }
@@ -146,28 +155,49 @@ fun RegisterScreen(authViewModel: AuthViewModel) {
 
             Spacer(modifier = Modifier.height(32.dp))
 
+            // Campo de Nombre
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
                 label = { Text("Nombre") },
                 shape = RoundedCornerShape(12.dp),
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                isError = nameError.isNotEmpty()
             )
+            if (nameError.isNotEmpty()) {
+                Text(
+                    text = nameError,
+                    color = Color.Red,
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(start = 16.dp)
+                )
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Campo de Email
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
                 label = { Text("Email") },
                 shape = RoundedCornerShape(12.dp),
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                isError = emailError.isNotEmpty()
             )
+            if (emailError.isNotEmpty()) {
+                Text(
+                    text = emailError,
+                    color = Color.Red,
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(start = 16.dp)
+                )
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Campo de Contraseña
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -175,17 +205,51 @@ fun RegisterScreen(authViewModel: AuthViewModel) {
                 shape = RoundedCornerShape(12.dp),
                 visualTransformation = PasswordVisualTransformation(),
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                isError = passwordError.isNotEmpty()
             )
+            if (passwordError.isNotEmpty()) {
+                Text(
+                    text = passwordError,
+                    color = Color.Red,
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(start = 16.dp)
+                )
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
                 onClick = {
-                    if (name.isNotEmpty() && email.isNotEmpty() && password.isNotEmpty()) {
+                    var isValid = true
+
+                    // Validaciones
+                    if (name.isEmpty()) {
+                        nameError = "El nombre es obligatorio"
+                        isValid = false
+                    } else {
+                        nameError = ""
+                    }
+
+                    if (email.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                        emailError = "Introduce un correo válido"
+                        isValid = false
+                    } else {
+                        emailError = ""
+                    }
+
+                    if (password.isEmpty() || password.length < 6) {
+                        passwordError = "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un carácter especial"
+                        isValid = false
+                    } else {
+                        passwordError = ""
+                    }
+
+                    // Si todo es válido, registramos
+                    if (isValid) {
                         authViewModel.register(email, password, name)
                     } else {
-                        Toast.makeText(context, "Por favor completa todos los campos", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Por favor corrige los errores", Toast.LENGTH_SHORT).show()
                     }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),
@@ -213,6 +277,7 @@ fun RegisterScreen(authViewModel: AuthViewModel) {
         }
     }
 }
+
 
 
 @Composable
@@ -282,7 +347,7 @@ fun RegisterFormContent(
         TextButton(onClick = onLoginClick) {
             Text(
                 "¿Ya tienes cuenta? Inicia sesión",
-                color = Color(0xFF0F9D58) // Verde bonito para el texto
+                color = Color(0xFF0F9D58) // V
             )
         }
     }

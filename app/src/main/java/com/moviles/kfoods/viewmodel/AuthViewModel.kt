@@ -56,7 +56,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 } else {
                     val errorBody = response.errorBody()?.string()
                     Log.e("AuthViewModel", "Error en login: Código: ${response.code()}, Error: $errorBody")
-                    errorMessage.value = "Error al iniciar sesión: ${response.message()}"
+                    errorMessage.value = "Correo o contraseña incorrectos. Intenta nuevamente."
                 }
             } catch (e: Exception) {
                 errorMessage.value = "Error inesperado: ${e.message}"
@@ -168,10 +168,22 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
-
-
-
-
 }
+private fun getSimplifiedMessage(responseBody: String?): String {
+    return responseBody?.let {
+        // Aquí puedes agregar lógica adicional si el cuerpo es JSON o tiene formato complejo
+        try {
+            val regex = "\"message\"\\s*:\\s*\"(.*?)\"".toRegex()  // Regex para extraer el mensaje
+            val matchResult = regex.find(it)
+            matchResult?.groups?.get(1)?.value ?: "Mensaje no encontrado"
+        } catch (e: Exception) {
+            "Error al procesar el mensaje"
+        }
+    } ?: "Respuesta vacía"
+}
+
+
+
+
 
 

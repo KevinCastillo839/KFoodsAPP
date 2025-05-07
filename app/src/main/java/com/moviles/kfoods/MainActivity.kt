@@ -59,22 +59,30 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
+
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
-    authViewModel: AuthViewModel // <- agregar este parámetro
+    authViewModel: AuthViewModel
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var emailError by remember { mutableStateOf(false) }
+    var passwordError by remember { mutableStateOf(false) }
     val loginResult by authViewModel.loginResult.observeAsState()
     val errorMessage by authViewModel.errorMessage.observeAsState()
 
+    val context = LocalContext.current
+
+    // SnackbarHostState para mostrar mensajes
+    val snackbarHostState = remember { SnackbarHostState() }
+
     Box(modifier = modifier.fillMaxSize()) {
-        // Parte superior: imagen de fondo con logo centrado
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(350.dp) // Altura fija para controlar mejor el traslape
+                .height(350.dp)
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
                 Image(
@@ -94,11 +102,10 @@ fun LoginScreen(
             }
         }
 
-        // Parte inferior superpuesta
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 300.dp) // Se superpone sobre la imagen
+                .padding(top = 300.dp)
                 .shadow(
                     elevation = 8.dp,
                     shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
@@ -107,9 +114,9 @@ fun LoginScreen(
                 .background(
                     brush = Brush.horizontalGradient(
                         colors = listOf(
-                            Color(0xFFFFE0B2), // Más oscuro a la izquierda
-                            Color(0xFFFFF3E0), // Centro
-                            Color(0xFFFFFBF5)  // Casi blanco a la derecha
+                            Color(0xFFFFE0B2),
+                            Color(0xFFFFF3E0),
+                            Color(0xFFFFFBF5)
                         )
                     ),
                     shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
@@ -117,8 +124,7 @@ fun LoginScreen(
                 .padding(horizontal = 24.dp, vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
-        )
-        {
+        ) {
             Text(
                 text = "¡Bienvenido!",
                 fontSize = 32.sp,
@@ -138,31 +144,68 @@ fun LoginScreen(
 
             OutlinedTextField(
                 value = email,
-                onValueChange = { email = it },
+                onValueChange = {
+                    email = it
+                    emailError = false
+                },
                 label = { Text("Email") },
                 shape = RoundedCornerShape(12.dp),
                 singleLine = true,
+                isError = emailError,
                 modifier = Modifier.fillMaxWidth()
             )
+            if (emailError) {
+                Text(
+                    text = "El correo no puede estar vacío",
+                    color = Color.Red,
+                    fontSize = 12.sp,
+                    modifier = Modifier.align(Alignment.Start)
+                )
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedTextField(
                 value = password,
-                onValueChange = { password = it },
+                onValueChange = {
+                    password = it
+                    passwordError = false
+                },
                 label = { Text("Contraseña") },
                 shape = RoundedCornerShape(12.dp),
                 visualTransformation = PasswordVisualTransformation(),
                 singleLine = true,
+                isError = passwordError,
                 modifier = Modifier.fillMaxWidth()
             )
+            if (passwordError) {
+                Text(
+                    text = "La contraseña no puede estar vacía",
+                    color = Color.Red,
+                    fontSize = 12.sp,
+                    modifier = Modifier.align(Alignment.Start)
+                )
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
                 onClick = {
-                    Log.d("LoginScreen", "Botón de inicio de sesión presionado con email: $email y password: $password")
-                    authViewModel.login(email, password)
+                    var valid = true
+
+                    if (email.isBlank()) {
+                        emailError = true
+                        valid = false
+                    }
+                    if (password.isBlank()) {
+                        passwordError = true
+                        valid = false
+                    }
+
+                    if (valid) {
+                        Log.d("LoginScreen", "Botón de inicio de sesión presionado con email: $email y password: $password")
+                        authViewModel.login(email, password)
+                    }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),
                 shape = RoundedCornerShape(12.dp),
@@ -178,9 +221,14 @@ fun LoginScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            // Mostrar el mensaje del error si hay alguno
+            LaunchedEffect(errorMessage) {
+                errorMessage?.let {
+                    snackbarHostState.showSnackbar(it, duration = SnackbarDuration.Short)
+                }
+            }
 
-            val context = LocalContext.current
+            Spacer(modifier = Modifier.height(16.dp))
 
             TextButton(onClick = {
                 context.startActivity(Intent(context, ForgotPasswordActivity::class.java))
@@ -193,9 +241,11 @@ fun LoginScreen(
             }) {
                 Text("¡Registrarse!", color = Color(0xFFFF5722))
             }
-
-
         }
+
+        // Mostrar el Snackbar
+        SnackbarHost(hostState = snackbarHostState)
     }
 }
+
 
