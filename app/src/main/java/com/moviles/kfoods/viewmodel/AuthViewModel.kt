@@ -7,11 +7,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.moviles.kfoods.models.ApiResponse
-import com.moviles.kfoods.models.LoginRequest
-import com.moviles.kfoods.models.LoginResponse
-import com.moviles.kfoods.models.ResetPassword
-import com.moviles.kfoods.models.ResetPasswordRequest
+import com.moviles.kfoods.models.dto.ApiResponse
+import com.moviles.kfoods.models.dto.LoginRequest
+import com.moviles.kfoods.models.dto.LoginResponse
+import com.moviles.kfoods.models.dto.ResetPassword
+import com.moviles.kfoods.models.dto.ResetPasswordRequest
 import com.moviles.kfoods.models.User
 import com.moviles.kfoods.network.RetrofitInstance
 import com.moviles.kfoods.util.SharedPreferencesManager
@@ -82,14 +82,13 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     fun register(email: String, password: String, fullName: String) {
         viewModelScope.launch {
             try {
-
                 val createdAt = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault()).format(Date())
-                val cleanedEmail = email.trim() // Esto elimina espacios en blanco al principio y al final
+                val cleanedEmail = email.trim()
                 val user = User(
                     email = cleanedEmail,
                     password = password,
                     full_name = fullName,
-                    created_at = createdAt // Asignamos la fecha actual en formato ISO 8601
+                    created_at = createdAt
                 )
 
                 val response = RetrofitInstance.api.register(user)
@@ -97,12 +96,18 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 if (response.isSuccessful) {
                     val registerResponse = response.body()
                     if (registerResponse != null) {
-                        // Acceder al mensaje de la respuesta
-                        //Log.d("AuthViewModel", "Registro exitoso: ${registerResponse.message}")
+                        // Logeamos el ID y el Token
+                        Log.d("AuthViewModel", "RegistroExitoso -> userId: ${registerResponse.userId}, token: ${registerResponse.token}")
+
+                        // Guardar el token recibido
+                        sharedPreferencesManager.saveToken(registerResponse.token)
+
+                        // Después de guardar el token, obtenemos alergias
+                        getAllergies()
+
                         registrationResult.value = true
                     }
                 } else {
-                    // Manejo de error en caso de que la respuesta sea incorrecta
                     val errorBody = response.errorBody()?.string()
                     Log.e("AuthViewModel", "Error en el registro: Código: ${response.code()}, Error: $errorBody")
                     errorMessage.value = errorBody ?: "Error desconocido"
@@ -120,6 +125,8 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
+
+
 
     fun forgotPassword(email: String) {
         viewModelScope.launch {
