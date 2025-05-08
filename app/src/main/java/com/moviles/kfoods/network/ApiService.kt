@@ -27,6 +27,24 @@ interface ApiService {
     @POST("api/auth/reset-password")
     suspend fun resetPassword(@Body request: ResetPasswordRequest): Response<ApiResponse>
 
+    // === CRUD para alergias ===
+
+    // Obtener todas las alergias
+    @GET("api/allergy")
+    suspend fun getAllergies(): Response<List<Allergy>>
+
+    // Crear nueva alergia
+    @POST("api/allergy")
+    suspend fun createAllergy(@Body allergy: Allergy): Response<Allergy>
+
+    // Actualizar una alergia existente
+    @PUT("api/allergy/{id}")
+    suspend fun updateAllergy(@Path("id") id: Int, @Body allergy: Allergy): Response<Allergy>
+
+    // Eliminar una alergia
+    @DELETE("api/allergy/{id}")
+    suspend fun deleteAllergy(@Path("id") id: Int): Response<Unit>
+
 
 
 }
