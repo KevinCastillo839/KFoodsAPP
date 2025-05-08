@@ -7,17 +7,20 @@ import com.moviles.kfoods.models.ResetPasswordRequest
 import com.moviles.kfoods.models.User
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
+import retrofit2.http.Path
 
 interface ApiService {
 
     @POST("api/auth/login")
     suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
 
-    @GET("api/allergy")
+/*@GET("api/allergy")
     suspend fun getAllergies(): Response<List<Allergy>>
-
+*/
     @POST("api/auth/register")
     suspend fun register(@Body  user: User): Response<ApiResponse>
 
