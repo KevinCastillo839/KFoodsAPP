@@ -3,4 +3,6 @@
     <string name="title_activity_register">RegisterActivity</string>
     <string name="title_activity_forgot_password">ForgotPasswordActivity</string>
     <string name="title_activity_reset_password">ResetPasswordActivity</string>
+    <string name="title_activity_principal">PrincipalActivity</string>
+    <string name="title_activity_user">UserActivity</string>
 </resources>
