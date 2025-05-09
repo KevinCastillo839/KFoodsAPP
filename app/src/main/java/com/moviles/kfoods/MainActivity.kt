@@ -39,7 +39,7 @@ class MainActivity : ComponentActivity() {
 
 
     private val authViewModel: AuthViewModel by viewModels {
-        AuthViewModelFactory(application) // Usamos la fábrica actualizada aquí
+        AuthViewModelFactory(application) // use the factory
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,7 +75,7 @@ fun LoginScreen(
 
     val context = LocalContext.current
 
-    // SnackbarHostState para mostrar mensajes
+    // SnackbarHostState
     val snackbarHostState = remember { SnackbarHostState() }
 
     Box(modifier = modifier.fillMaxSize()) {
@@ -223,14 +223,13 @@ fun LoginScreen(
             LaunchedEffect(loginResult) {
                 loginResult?.let { loginResponse ->
                     val intent = Intent(context, PrincipalActivity::class.java)
-                    intent.putExtra("id", loginResponse.userId) // Aquí sí, porque userId es Int
+                    intent.putExtra("id", loginResponse.userId)
                     context.startActivity(intent)
                 }
             }
 
 
 
-            // Mostrar el mensaje del error si hay alguno
             LaunchedEffect(errorMessage) {
                 errorMessage?.let {
                     snackbarHostState.showSnackbar(it, duration = SnackbarDuration.Short)
@@ -252,7 +251,7 @@ fun LoginScreen(
             }
         }
 
-        // Mostrar el Snackbar
+        //   Snackbar
         SnackbarHost(hostState = snackbarHostState)
     }
 }

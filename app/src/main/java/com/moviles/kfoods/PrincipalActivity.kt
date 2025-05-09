@@ -43,16 +43,16 @@ import kotlin.getValue
 
 class PrincipalActivity : ComponentActivity() {
     private val authViewModel: AuthViewModel by viewModels {
-        AuthViewModelFactory(application) // Usamos la fábrica actualizada aquí
+        AuthViewModelFactory(application) // use the factory
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
-            val userId = intent.getIntExtra("id", -1) // Recibir el userId
+            val userId = intent.getIntExtra("id", -1) //Receive the userId as a parameter
             KFoodsTheme {
                 PrincipalScreen(userId = userId)
-          // Pasar el userId a PrincipalScreen
+          // Pass the userId to PrincipalScreen
             }
         }
      }
@@ -62,20 +62,23 @@ class PrincipalActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
-    var selectedItem by remember { mutableStateOf(2) } // 0: Perfil, 1: Libro, 2: Inicio, 3: Carrito, 4: Mapa
-    val navController = rememberNavController() // Crear NavController
+    var selectedItem by remember { mutableStateOf(2) } // 0: Profile, 1: Book, 2: Home, 3: Cart, 4: Map
+
+    val navController = rememberNavController() // // Create NavController
+
 
     Scaffold(
         bottomBar = {
             BottomNavigationBar(selectedItem) { index ->
                 selectedItem = index
-                // Cambiar la pantalla cuando se selecciona un item
+                // Change the screen when an item is selected
+
                 when (index) {
-                    0 -> navController.navigate("user/$userId") // Navegar a la pantalla de Usuario
-                    1 -> navController.navigate("book")  // Navegar a la pantalla de Libro
-                    2 -> navController.navigate("home")  // Navegar a la pantalla Principal
-                    3 -> navController.navigate("cart")  // Navegar a la pantalla de Carrito
-                    4 -> navController.navigate("map")  // Navegar a la pantalla de Mapa
+                    0 -> navController.navigate("user/$userId") // Navigate to the User screen
+                    1 -> navController.navigate("recipe")  // Navigate to the recipe screen
+                    2 -> navController.navigate("home")  // Navigate to the home screen
+                    3 -> navController.navigate("cart")  // Navigate to the cart screen
+                    4 -> navController.navigate("map")  // Navigate to the map screen
                 }
             }
         },
@@ -87,22 +90,22 @@ fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
                 .padding(paddingValues),
             contentAlignment = Alignment.Center
         ) {
-            // Usar NavHost para navegar entre pantallas
+            // use nahost to navigate in the screens
             NavHost(navController = navController, startDestination = "home") {
                 composable("home") {
                     HomeScreen() // Pantalla Principal
                 }
                 composable(
-                    route = "user/{userId}",  // <- Notación de argumento
-                    arguments = listOf(navArgument("userId") { type = NavType.IntType })  // <- Declarar el tipo de argumento
+                    route = "user/{userId}",
+                    arguments = listOf(navArgument("userId") { type = NavType.IntType })  // <-declarate argument type
                 ) { backStackEntry ->
                     val userId = backStackEntry.arguments?.getInt("userId") ?: -1
 
                     UserScreen(authViewModel = authViewModel, userId = userId)
                 }
 
-                composable("book") {
-                    BookScreen() // Pantalla de Libro
+                composable("recipe") {
+                    RecipeScreen()
                 }
                 composable("cart") {
                     CartScreen()
@@ -137,7 +140,7 @@ fun UserScreen(authViewModel: AuthViewModel, userId: Int) {
     LaunchedEffect(userId) {
         authViewModel.getUserById(userId)
     }
-    // Observamos solo lo necesario
+
     val isLoading by rememberUpdatedState(authViewModel.isLoading.value)
     val userResult by authViewModel.userResult.observeAsState(initial = null)
 
@@ -188,7 +191,7 @@ fun UserScreen(authViewModel: AuthViewModel, userId: Int) {
 
             // Nombre del usuario
             Text(
-                text = userResult?.full_name ?: "Nombre de Usuario",  // Muestra el nombre si está disponible
+                text = userResult?.full_name ?: "Nombre de Usuario",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF1E1E1E)
@@ -196,7 +199,7 @@ fun UserScreen(authViewModel: AuthViewModel, userId: Int) {
 
             // Correo del usuario
             Text(
-                text = userResult?.email ?: "Correo no disponible",  // Muestra el correo si está disponible
+                text = userResult?.email ?: "Correo no disponible",
                 fontSize = 16.sp,
                 color = Color(0xFF757575)
             )
@@ -243,11 +246,11 @@ fun UserScreen(authViewModel: AuthViewModel, userId: Int) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Botón CERRAR SESIÓN
+            // logout button
             Button(
                 onClick = {
-                    authViewModel.logout()  // 1. Hace logout
-                    val intent = Intent(context, MainActivity::class.java)  // 2. Luego va al MainActivity
+                    authViewModel.logout()  // 1.  logout
+                    val intent = Intent(context, MainActivity::class.java)  // 2. go to the  MainActivity
                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                     context.startActivity(intent)
                 },
@@ -300,7 +303,7 @@ fun BottomNavigationBar(selectedIndex: Int, onItemSelected: (Int) -> Unit) {
 }
 
 @Composable
-fun BookScreen() {
+fun RecipeScreen() {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center

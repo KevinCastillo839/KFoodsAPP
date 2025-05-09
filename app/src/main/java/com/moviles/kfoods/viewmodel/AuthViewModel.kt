@@ -49,10 +49,8 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
                         loginResult.value = loginResponse
 
-                        // Aquí guardamos el token
                         sharedPreferencesManager.saveToken(loginResponse.token)
 
-                        // Y después llamamos a getAllergies()
                         getAllergies()
                     }
                 } else {
@@ -68,10 +66,10 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     fun logout() {
         Log.d("AuthViewModel", "Iniciando cierre de sesión...")
 
-        // Borrar el token
+
         sharedPreferencesManager.clearToken()
 
-        // Confirmar que se haya eliminado el token
+
         val token = sharedPreferencesManager.getToken()
         if (token.isNullOrEmpty()) {
             Log.d("AuthViewModel", "Token eliminado correctamente. Sesión cerrada.")
@@ -79,7 +77,6 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             Log.e("AuthViewModel", "Error: el token aún existe -> $token")
         }
 
-        // Puedes limpiar otros datos si guardas más cosas como usuario, alergias, etc.
     }
 
 
@@ -118,10 +115,10 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                         // Logeamos el ID y el Token
                         Log.d("AuthViewModel", "RegistroExitoso -> userId: ${registerResponse.userId}, token: ${registerResponse.token}")
 
-                        // Guardar el token recibido
+                        // save the token
                         sharedPreferencesManager.saveToken(registerResponse.token)
 
-                        // Después de guardar el token, obtenemos alergias
+
                         getAllergies()
 
                         registrationResult.value = true
@@ -178,7 +175,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     ) {
         viewModelScope.launch {
             try {
-                // Mostrar la nueva contraseña en el Logcat
+
                 Log.d("ResetPassword", "Nueva contraseña: $newPassword")
 
                 val request = ResetPasswordRequest(email, token, newPassword)
@@ -196,25 +193,25 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun getUserById(userId: Int) {
-        Log.d("AuthViewModel", "Iniciando la obtención del usuario con ID: $userId") // Log inicial
+        Log.d("AuthViewModel", "Iniciando la obtención del usuario con ID: $userId") // initial log
 
         viewModelScope.launch {
             try {
                 val response = RetrofitInstance.api.getUserById(userId)
-                Log.d("AuthViewModel", "Respuesta recibida: $response") // Log de la respuesta
+                Log.d("AuthViewModel", "Respuesta recibida: $response") // answer log
 
                 if (response.isSuccessful) {
                     val user = response.body()
-                    Log.d("AuthViewModel", "Usuario obtenido exitosamente: $user") // Log de éxito
+                    Log.d("AuthViewModel", "Usuario obtenido exitosamente: $user")
 
-                    userResult.value = user // Establecer el resultado
-                    errorMessage.value = "" // Limpiar cualquier error
+                    userResult.value = user
+                    errorMessage.value = ""
                 } else {
-                    Log.e("AuthViewModel", "Error en la respuesta: Código ${response.code()}") // Log de error de respuesta
+                    Log.e("AuthViewModel", "Error en la respuesta: Código ${response.code()}")
                     errorMessage.value = "Error al obtener el usuario"
                 }
             } catch (e: Exception) {
-                Log.e("AuthViewModel", "Excepción al obtener el usuario: ${e.message}", e) // Log de excepción
+                Log.e("AuthViewModel", "Excepción al obtener el usuario: ${e.message}", e)
                 errorMessage.value = "Error inesperado: ${e.message}"
             }
         }
@@ -225,9 +222,9 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
 private fun getSimplifiedMessage(responseBody: String?): String {
     return responseBody?.let {
-        // Aquí puedes agregar lógica adicional si el cuerpo es JSON o tiene formato complejo
+
         try {
-            val regex = "\"message\"\\s*:\\s*\"(.*?)\"".toRegex()  // Regex para extraer el mensaje
+            val regex = "\"message\"\\s*:\\s*\"(.*?)\"".toRegex()
             val matchResult = regex.find(it)
             matchResult?.groups?.get(1)?.value ?: "Mensaje no encontrado"
         } catch (e: Exception) {
