@@ -1,10 +1,10 @@
 package com.moviles.kfoods
 
-import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -34,26 +34,34 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.*
-import com.moviles.kfoods.models.User
+import androidx.navigation.navArgument
+import com.moviles.kfoods.factory.AuthViewModelFactory
 import com.moviles.kfoods.viewmodel.AuthViewModel
+import kotlin.getValue
 
 class PrincipalActivity : ComponentActivity() {
+    private val authViewModel: AuthViewModel by viewModels {
+        AuthViewModelFactory(application) // Usamos la fábrica actualizada aquí
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
             val userId = intent.getIntExtra("id", -1) // Recibir el userId
             KFoodsTheme {
-                PrincipalScreen(userId = userId) // Pasar el userId a PrincipalScreen
+                PrincipalScreen(userId = userId)
+          // Pasar el userId a PrincipalScreen
             }
         }
+     }
+
     }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PrincipalScreen(userId: Int) {
+fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
     var selectedItem by remember { mutableStateOf(2) } // 0: Perfil, 1: Libro, 2: Inicio, 3: Carrito, 4: Mapa
     val navController = rememberNavController() // Crear NavController
 
@@ -63,7 +71,7 @@ fun PrincipalScreen(userId: Int) {
                 selectedItem = index
                 // Cambiar la pantalla cuando se selecciona un item
                 when (index) {
-                    0 -> navController.navigate("user")  // Navegar a la pantalla de Usuario
+                    0 -> navController.navigate("user/$userId") // Navegar a la pantalla de Usuario
                     1 -> navController.navigate("book")  // Navegar a la pantalla de Libro
                     2 -> navController.navigate("home")  // Navegar a la pantalla Principal
                     3 -> navController.navigate("cart")  // Navegar a la pantalla de Carrito
@@ -84,9 +92,15 @@ fun PrincipalScreen(userId: Int) {
                 composable("home") {
                     HomeScreen() // Pantalla Principal
                 }
-                composable("user") {
-                    UserScreen() // Pantalla de Usuario
+                composable(
+                    route = "user/{userId}",  // <- Notación de argumento
+                    arguments = listOf(navArgument("userId") { type = NavType.IntType })  // <- Declarar el tipo de argumento
+                ) { backStackEntry ->
+                    val userId = backStackEntry.arguments?.getInt("userId") ?: -1
+
+                    UserScreen(authViewModel = authViewModel, userId = userId)
                 }
+
                 composable("book") {
                     BookScreen() // Pantalla de Libro
                 }
@@ -96,11 +110,11 @@ fun PrincipalScreen(userId: Int) {
                 composable("map") {
                     MapScreen()
                 }
-
             }
         }
     }
 }
+
 
 @Composable
 fun HomeScreen() {
@@ -116,8 +130,17 @@ fun HomeScreen() {
     }
 }
 
+
 @Composable
-fun UserScreen() {
+fun UserScreen(authViewModel: AuthViewModel, userId: Int) {
+    val context = LocalContext.current
+    LaunchedEffect(userId) {
+        authViewModel.getUserById(userId)
+    }
+    // Observamos solo lo necesario
+    val isLoading by rememberUpdatedState(authViewModel.isLoading.value)
+    val userResult by authViewModel.userResult.observeAsState(initial = null)
+
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -151,7 +174,7 @@ fun UserScreen() {
                 .padding(horizontal = 24.dp, vertical = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Foto de usuario (circular)
+            // Foto de usuario
             Image(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "Foto de usuario",
@@ -165,15 +188,22 @@ fun UserScreen() {
 
             // Nombre del usuario
             Text(
-                text = "Nombre de Usuario",
+                text = userResult?.full_name ?: "Nombre de Usuario",  // Muestra el nombre si está disponible
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF1E1E1E)
             )
 
+            // Correo del usuario
+            Text(
+                text = userResult?.email ?: "Correo no disponible",  // Muestra el correo si está disponible
+                fontSize = 16.sp,
+                color = Color(0xFF757575)
+            )
+
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Botones
+            // Botones existentes
             Button(
                 onClick = { /* TODO: Acción editar preferencias */ },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),
@@ -210,12 +240,28 @@ fun UserScreen() {
             ) {
                 Text(text = "Borrar Cuenta", color = Color.White, fontSize = 16.sp)
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Botón CERRAR SESIÓN
+            Button(
+                onClick = {
+                    authViewModel.logout()  // 1. Hace logout
+                    val intent = Intent(context, MainActivity::class.java)  // 2. Luego va al MainActivity
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    context.startActivity(intent)
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF757575)),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+            ) {
+                Text(text = "Cerrar Sesión", color = Color.White, fontSize = 16.sp)
+            }
         }
     }
 }
-
-
-
 
 
 @OptIn(ExperimentalMaterial3Api::class)

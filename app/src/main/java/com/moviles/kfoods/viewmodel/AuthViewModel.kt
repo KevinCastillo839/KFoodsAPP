@@ -66,6 +66,23 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
+    fun logout() {
+        Log.d("AuthViewModel", "Iniciando cierre de sesión...")
+
+        // Borrar el token
+        sharedPreferencesManager.clearToken()
+
+        // Confirmar que se haya eliminado el token
+        val token = sharedPreferencesManager.getToken()
+        if (token.isNullOrEmpty()) {
+            Log.d("AuthViewModel", "Token eliminado correctamente. Sesión cerrada.")
+        } else {
+            Log.e("AuthViewModel", "Error: el token aún existe -> $token")
+        }
+
+        // Puedes limpiar otros datos si guardas más cosas como usuario, alergias, etc.
+    }
+
 
     private fun getAllergies() {
         viewModelScope.launch {
