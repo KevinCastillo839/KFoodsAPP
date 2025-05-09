@@ -5,4 +5,6 @@
     <string name="title_activity_reset_password">ResetPasswordActivity</string>
     <string name="title_activity_principal">PrincipalActivity</string>
     <string name="title_activity_user">UserActivity</string>
+    <string name="title_activity_preference" />
+    <string name="title_activity_generate_menu">GenerateMenuActivity</string>
 </resources>

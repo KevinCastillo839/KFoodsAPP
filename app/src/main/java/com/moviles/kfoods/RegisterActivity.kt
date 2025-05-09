@@ -61,17 +61,26 @@ fun RegisterScreen(authViewModel: AuthViewModel) {
     val registrationResult by authViewModel.registrationResult.observeAsState()
     val errorMessage by authViewModel.errorMessage.observeAsState()
     val context = LocalContext.current
+    val userId by authViewModel.userId.observeAsState()
 
+    LaunchedEffect(userId) {
+        userId?.let {
+            val intent = Intent(context, PreferenceActivity::class.java).apply {
+                putExtra("USER_ID", it)
+            }
+            context.startActivity(intent)
+            (context as RegisterActivity).finish()
+        }
+    }
+    // Manejar resultado de registro
     LaunchedEffect(registrationResult) {
-        registrationResult?.let {
-            if (it) {
+        registrationResult?.let { success ->
+            if (success) {
                 Toast.makeText(
                     context,
-                    "Registro exitoso. Ahora puedes iniciar sesión.",
+                    "Registro exitoso. Ahora puedes configurar tus preferencias.",
                     Toast.LENGTH_LONG
                 ).show()
-                context.startActivity(Intent(context, MainActivity::class.java))
-                (context as RegisterActivity).finish()
             } else {
                 Toast.makeText(context, "Error en el registro.", Toast.LENGTH_SHORT).show()
             }
