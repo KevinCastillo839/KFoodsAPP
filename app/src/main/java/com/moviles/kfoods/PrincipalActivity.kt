@@ -1,10 +1,12 @@
 package com.moviles.kfoods
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -35,25 +37,32 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.*
+import com.moviles.kfoods.factory.AuthViewModelFactory
 import com.moviles.kfoods.models.User
 import com.moviles.kfoods.viewmodel.AuthViewModel
+import kotlin.getValue
 
 class PrincipalActivity : ComponentActivity() {
+    private val authViewModel: AuthViewModel by viewModels {
+        AuthViewModelFactory(application) // Usamos la fábrica actualizada aquí
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
             val userId = intent.getIntExtra("id", -1) // Recibir el userId
             KFoodsTheme {
-                PrincipalScreen(userId = userId) // Pasar el userId a PrincipalScreen
+                PrincipalScreen(userId = userId)
+          // Pasar el userId a PrincipalScreen
             }
         }
+     }
+
     }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PrincipalScreen(userId: Int) {
+fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
     var selectedItem by remember { mutableStateOf(2) } // 0: Perfil, 1: Libro, 2: Inicio, 3: Carrito, 4: Mapa
     val navController = rememberNavController() // Crear NavController
 
@@ -85,7 +94,7 @@ fun PrincipalScreen(userId: Int) {
                     HomeScreen() // Pantalla Principal
                 }
                 composable("user") {
-                    UserScreen() // Pantalla de Usuario
+                    UserScreen(authViewModel = authViewModel) // Pasar el AuthViewModel
                 }
                 composable("book") {
                     BookScreen() // Pantalla de Libro
@@ -96,11 +105,11 @@ fun PrincipalScreen(userId: Int) {
                 composable("map") {
                     MapScreen()
                 }
-
             }
         }
     }
 }
+
 
 @Composable
 fun HomeScreen() {
@@ -116,8 +125,11 @@ fun HomeScreen() {
     }
 }
 
+
 @Composable
-fun UserScreen() {
+fun UserScreen(authViewModel: AuthViewModel) {
+    val context = LocalContext.current
+
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -151,7 +163,7 @@ fun UserScreen() {
                 .padding(horizontal = 24.dp, vertical = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Foto de usuario (circular)
+            // Foto de usuario
             Image(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "Foto de usuario",
@@ -173,7 +185,7 @@ fun UserScreen() {
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Botones
+            // Botones existentes
             Button(
                 onClick = { /* TODO: Acción editar preferencias */ },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),
@@ -210,10 +222,28 @@ fun UserScreen() {
             ) {
                 Text(text = "Borrar Cuenta", color = Color.White, fontSize = 16.sp)
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Botón CERRAR SESIÓN
+            Button(
+                onClick = {
+                    authViewModel.logout()  // 1. Hace logout
+                    val intent = Intent(context, MainActivity::class.java)  // 2. Luego va al MainActivity
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    context.startActivity(intent)
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF757575)),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+            ) {
+                Text(text = "Cerrar Sesión", color = Color.White, fontSize = 16.sp)
+            }
         }
     }
 }
-
 
 
 
