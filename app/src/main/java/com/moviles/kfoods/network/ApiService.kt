@@ -1,4 +1,5 @@
 import com.moviles.kfoods.models.Allergy
+import com.moviles.kfoods.models.Preference
 import com.moviles.kfoods.models.dto.ApiResponse
 import com.moviles.kfoods.models.dto.LoginRequest
 import com.moviles.kfoods.models.dto.LoginResponse
@@ -8,8 +9,11 @@ import com.moviles.kfoods.models.User
 import com.moviles.kfoods.models.dto.RegisterResponse
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
+import retrofit2.http.Path
 
 interface ApiService {
 
@@ -28,6 +32,25 @@ interface ApiService {
     @POST("api/auth/reset-password")
     suspend fun resetPassword(@Body request: ResetPasswordRequest): Response<ApiResponse>
 
+    // Obtener todas las preferencias
+    @GET("api/preference")
+    suspend fun getPreferences(): Response<List<Preference>>
+
+    // Obtener una preferencia por ID
+    @GET("api/preference/{id}")
+    suspend fun getPreferenceById(@Path("id") id: Int): Response<Preference>
+
+    // Crear una nueva preferencia
+    @POST("api/preference")
+    suspend fun createPreference(@Body request: Preference): Response<Preference>
+
+    // Actualizar una preferencia existente
+    @PUT("api/preference/{id}")
+    suspend fun updatePreference(@Path("id") id: Int, @Body request: Preference): Response<Preference>
+
+    // Eliminar una preferencia por ID
+    @DELETE("api/preference/{id}")
+    suspend fun deletePreference(@Path("id") id: Int): Response<ApiResponse>
 
 
 }

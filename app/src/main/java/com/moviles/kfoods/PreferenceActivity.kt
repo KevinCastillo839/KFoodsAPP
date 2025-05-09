@@ -11,15 +11,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.material.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,56 +27,38 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.moviles.kfoods.ui.theme.KFoodsTheme
-import androidx.activity.compose.setContent
-import androidx.activity.viewModels
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.moviles.kfoods.R
-import com.moviles.kfoods.factory.AuthViewModelFactory
 import com.moviles.kfoods.models.Allergy
+import com.moviles.kfoods.models.Preference
 import com.moviles.kfoods.viewmodel.AllergyViewModel
-import com.moviles.kfoods.viewmodel.AuthViewModel
+import com.moviles.kfoods.viewmodels.PreferenceViewModel
 
 class PreferenceActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Obtener ID desde el Intent
+        val userId = intent.getIntExtra("USER_ID", -1) // Default -1 si no se encuentra
         setContent {
             KFoodsTheme {
-                PreferencesScreen()
+                PreferencesScreen(userId = userId)
             }
         }
     }
 }
 
 @Composable
-fun PreferencesScreen(viewModel: AllergyViewModel = viewModel()) {
+fun PreferencesScreen(userId: Int,viewModelA: AllergyViewModel = viewModel(),viewModelP: PreferenceViewModel = viewModel()) {
     val preferences = listOf("Vegetariano", "Sin gluten", "Vegano", "Alta en proteínas", "Baja en calorías")
     val selectedPreferences = remember { mutableStateListOf<String>() }
-    val allergies by viewModel.allergies.collectAsState(initial = emptyList())
+    val allergies by viewModelA.allergies.collectAsState(initial = emptyList())
     var dietGoal by remember { mutableStateOf("") }
     val dietGoals = listOf("Pérdida de peso", "Mantenimiento", "Ganancia muscular")
     var isDietGoalsExpanded by remember { mutableStateOf(false) }
@@ -88,19 +67,16 @@ fun PreferencesScreen(viewModel: AllergyViewModel = viewModel()) {
     var isAllergiesExpanded by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        viewModel.getAllAllergies()
+        viewModelA.getAllAllergies()
     }
-
 
     Box(modifier = Modifier.fillMaxSize()) {
         // Parte superior: imagen con logo
-        Column(
-            modifier = Modifier
+        Column(modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp)
         ) {
-            Box(
-                modifier = Modifier.fillMaxSize()
+            Box(modifier = Modifier.fillMaxSize()
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.image_main),
@@ -110,7 +86,6 @@ fun PreferencesScreen(viewModel: AllergyViewModel = viewModel()) {
                         .height(200.dp), // Ajusta la altura para que sea menor
                     contentScale = ContentScale.Crop // Mantiene una escala adecuada
                 )
-
                 // Logo centrado encima de la imagen
                 Image(
                     painter = painterResource(id = R.drawable.logo),
@@ -128,8 +103,7 @@ fun PreferencesScreen(viewModel: AllergyViewModel = viewModel()) {
             }
         }
         // Formulario
-        Column(
-            modifier = Modifier
+        Column(modifier = Modifier
                 .fillMaxSize()
                 .padding(top = 160.dp)
                 .shadow(
@@ -137,8 +111,7 @@ fun PreferencesScreen(viewModel: AllergyViewModel = viewModel()) {
                     shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
                     clip = true
                 )
-                .background(
-                    brush = Brush.horizontalGradient(
+                .background(brush = Brush.horizontalGradient(
                         colors = listOf(
                             Color(0xFFFFE0B2),
                             Color(0xFFFFF3E0),
@@ -311,11 +284,17 @@ fun PreferencesScreen(viewModel: AllergyViewModel = viewModel()) {
             // Botón para enviar
             Button(
                 onClick = {
-                    Toast.makeText(
-                        context,
-                        "Preferencias guardadas correctamente",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    val preference = Preference(
+                        id = 0, // Si es autogenerado en el servidor, puedes enviar un valor vacío o 0
+                        user_id = userId, // Usa el ID del usuario recibido
+                        is_vegetarian = selectedPreferences.contains("Vegetariano"),
+                        is_gluten_free = selectedPreferences.contains("Sin gluten"),
+                        is_vegan = selectedPreferences.contains("Vegano"),
+                        dietary_goals = dietGoal,
+                        created_at = null, // Deja vacío; usualmente el servidor lo genera
+                        updated_at = null
+                    )
+                    viewModelP.createPreference(preference)
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),
                 shape = RoundedCornerShape(12.dp),
@@ -323,10 +302,9 @@ fun PreferencesScreen(viewModel: AllergyViewModel = viewModel()) {
                     .fillMaxWidth()
                     .height(50.dp)
             ) {
-                Text(text = "Enviar", fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White)
+                Text(text = "Enviar", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
             }
+
         }
 
     }

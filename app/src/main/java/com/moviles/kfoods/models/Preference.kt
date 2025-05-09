@@ -7,6 +7,6 @@ data class Preference (
     val is_gluten_free: Boolean,
     val is_vegan: Boolean,
     val dietary_goals: String,
-    val created_at: String,
+    val created_at: String?,
     val updated_at: String?
 )

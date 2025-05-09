@@ -25,7 +25,8 @@ import java.util.Locale
 
 class AuthViewModel(application: Application) : AndroidViewModel(application) {
     private val context: Context = application.applicationContext
-
+    // Solo almacenamos el ID del usuario
+    val userId = MutableLiveData<Int?>()
     val registrationResult = MutableLiveData<Boolean>()
     var isLoading = mutableStateOf(false)
     var successMessage = mutableStateOf("")
@@ -102,6 +103,8 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                         // Guardar el token recibido
                         sharedPreferencesManager.saveToken(registerResponse.token)
 
+                        // Emitir userId y token para la siguiente Activity
+                        userId.value = registerResponse.userId
                         // Después de guardar el token, obtenemos alergias
                         getAllergies()
 
