@@ -17,7 +17,7 @@ class AllergyViewModel : ViewModel() {
     fun fetchAllergies() {
         viewModelScope.launch {
             try {
-                val result = RetrofitInstance.api.getAllAllergies()
+                val result = RetrofitInstance.api.getAllergies()
                 _allergies.value = result
                 Log.i("AllergyViewModel", "Fetched allergies: $result")
             } catch (e: Exception) {

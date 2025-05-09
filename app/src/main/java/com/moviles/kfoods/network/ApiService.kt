@@ -36,26 +36,23 @@ interface ApiService {
     @POST("api/auth/reset-password")
     suspend fun resetPassword(@Body request: ResetPasswordRequest): Response<ApiResponse>
 
-    // Obtener todas las preferencias
+    // Preferences
     @GET("api/preference")
     suspend fun getPreferences(): Response<List<Preference>>
 
-    // Obtener una preferencia por ID
     @GET("api/preference/{id}")
     suspend fun getPreferenceById(@Path("id") id: Int): Response<Preference>
 
-    // Crear una nueva preferencia
     @POST("api/preference")
     suspend fun createPreference(@Body request: Preference): Response<Preference>
 
-    // Actualizar una preferencia existente
     @PUT("api/preference/{id}")
     suspend fun updatePreference(@Path("id") id: Int, @Body request: Preference): Response<Preference>
 
-    // Eliminar una preferencia por ID
     @DELETE("api/preference/{id}")
     suspend fun deletePreference(@Path("id") id: Int): Response<ApiResponse>
 
+    // UserAllergy
     @POST("api/user_allergy")
     suspend fun createUserAllergy(@Body request: UserAllergy): Response<Preference>
 

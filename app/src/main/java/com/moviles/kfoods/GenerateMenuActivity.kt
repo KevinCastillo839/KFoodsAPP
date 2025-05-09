@@ -7,6 +7,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -48,24 +50,28 @@ fun GenerateMenuScreen(modifier: Modifier = Modifier) {
             .background(
                 brush = Brush.horizontalGradient(
                     colors = listOf(
-                        Color(0xFFFFE0B2),
-                        Color(0xFFFFF3E0),
-                        Color(0xFFFFFBF5)
+                        Color(0xFFFFA726),
+                        Color(0xFFFFCC80),
+                        Color(0xFFFFF3E0)
                     )
                 )
             ),
-        contentAlignment = Alignment.Center // Centra el contenido en el Box
+        contentAlignment = Alignment.Center
     ) {
         Button(
             onClick = {
                 // Acción al presionar el botón
             },
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),
-            shape = RoundedCornerShape(12.dp)
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(60.dp)
+                .padding(horizontal = 26.dp)
         ) {
             Text(
                 text = "Generar Menú",
-                fontSize = 16.sp,
+                fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
             )

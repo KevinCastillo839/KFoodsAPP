@@ -62,6 +62,7 @@ fun RegisterScreen(authViewModel: AuthViewModel) {
     val errorMessage by authViewModel.errorMessage.observeAsState()
     val context = LocalContext.current
     val userId by authViewModel.userId.observeAsState()
+
     LaunchedEffect(userId) {
         userId?.let {
             val intent = Intent(context, PreferenceActivity::class.java).apply {

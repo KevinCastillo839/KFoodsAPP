@@ -1,8 +1,8 @@
 package com.moviles.kfoods
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -47,8 +47,7 @@ class PreferenceActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Obtener ID desde el Intent
-        val userId = intent.getIntExtra("USER_ID", -1) // Default -1 si no se encuentra
+        val userId = intent.getIntExtra("USER_ID", -1)
         setContent {
             KFoodsTheme {
                 PreferencesScreen(userId = userId)
@@ -66,46 +65,17 @@ fun PreferencesScreen(userId: Int,viewModelA: AllergyViewModel = viewModel(),vie
     val dietGoals = listOf("Pérdida de peso", "Mantenimiento", "Ganancia muscular")
     var isDietGoalsExpanded by remember { mutableStateOf(false) }
     val context = LocalContext.current
-    var selectedAllergy by remember { mutableStateOf<Allergy?>(null) }
     var isAllergiesExpanded by remember { mutableStateOf(false) }
+    val selectedAllergies = remember { mutableStateListOf<Allergy>() }
 
     LaunchedEffect(Unit) {
         viewModelA.getAllAllergies()
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // Parte superior: imagen con logo
-        Column(modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
-        ) {
-            Box(modifier = Modifier.fillMaxSize()
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.image_main),
-                    contentDescription = "Imagen de fondo",
-                    modifier = Modifier
-                        .fillMaxWidth() // Ocupa todo el ancho
-                        .height(200.dp), // Ajusta la altura para que sea menor
-                    contentScale = ContentScale.Crop // Mantiene una escala adecuada
-                )
-                // Logo centrado encima de la imagen
-                Image(
-                    painter = painterResource(id = R.drawable.logo),
-                    contentDescription = "Logo circular",
-                    modifier = Modifier
-                        .size(80.dp) // Ajusta el tamaño del logo si es necesario
-                        .align(Alignment.Center)
-                        .clip(CircleShape)
-                        .clickable {
-                            // Acción al tocar el logo
-                            val intent = Intent(context, MainActivity::class.java)
-                            context.startActivity(intent)
-                        }
-                )
-            }
-        }
-        // Formulario
+        // Top: image with logo
+        PreferencesHeader(context)
+        // Form
         Column(modifier = Modifier
                 .fillMaxSize()
                 .padding(top = 160.dp)
@@ -130,7 +100,7 @@ fun PreferencesScreen(userId: Int,viewModelA: AllergyViewModel = viewModel(),vie
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top,
-                modifier = Modifier.weight(1f) // Permite que esta sección ocupe espacio restante
+                modifier = Modifier.weight(1f)
             ) {
                 Text(
                     text = "Preferencias",
@@ -147,7 +117,7 @@ fun PreferencesScreen(userId: Int,viewModelA: AllergyViewModel = viewModel(),vie
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Opciones de preferencias
+                // Preferences Options
                 preferences.forEach { preference ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -168,22 +138,22 @@ fun PreferencesScreen(userId: Int,viewModelA: AllergyViewModel = viewModel(),vie
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Selector de objetivo de dieta
+                // Diet Goal Selector
                 Text(text = "Seleccione su objetivo de dieta", fontSize = 16.sp, color = Color.Gray)
                 Box(modifier = Modifier.fillMaxWidth()) {
                     OutlinedTextField(
                         value = dietGoal,
                         onValueChange = {},
-                        readOnly = true, // Evita la edición directa
+                        readOnly = true, // Avoid direct editing
                         label = { Text(text = "Objetivo de dieta") },
                         modifier = Modifier.fillMaxWidth(),
                         trailingIcon = {
                             Icon(
-                                imageVector = Icons.Default.ArrowDropDown, // Usa directamente el vector predeterminado
+                                imageVector = Icons.Default.ArrowDropDown,
                                 contentDescription = "Abrir menú",
                                 modifier = Modifier.clickable {
                                     isDietGoalsExpanded = true
-                                } // Activa el menú
+                                } // Activate the menu
                             )
 
                         }
@@ -193,15 +163,15 @@ fun PreferencesScreen(userId: Int,viewModelA: AllergyViewModel = viewModel(),vie
                         expanded = isDietGoalsExpanded,
                         onDismissRequest = {
                             isDietGoalsExpanded = false
-                        }, // Cierra el menú si se hace clic fuera
-                        modifier = Modifier.fillMaxWidth() // Asegura que el menú ocupe todo el ancho disponible
+                        }, // Closes the menu if clicked outside
+                        modifier = Modifier.fillMaxWidth() // Ensures the menu fills the entire available width
                     ) {
                         dietGoals.forEach { goal ->
                             DropdownMenuItem(
                                 text = { Text(text = goal) },
                                 onClick = {
-                                    dietGoal = goal // Actualiza el valor seleccionado
-                                    isDietGoalsExpanded = false // Cierra el menú
+                                    dietGoal = goal // Update the selected value
+                                    isDietGoalsExpanded = false // Close the menu
                                 }
                             )
                         }
@@ -209,53 +179,58 @@ fun PreferencesScreen(userId: Int,viewModelA: AllergyViewModel = viewModel(),vie
                 }
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Selección de alergias
+                // Allergy selection
                 Text(text = "Agregue sus alergias", fontSize = 16.sp, color = Color.Gray)
 
-                Box(modifier = Modifier.fillMaxSize()) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()) {
-                        // Selector de Alergias
-                        Box(modifier = Modifier.fillMaxWidth()) {
-                            OutlinedTextField(
-                                value = selectedAllergy?.name ?: "",
-                                onValueChange = {},
-                                readOnly = true,
-                                label = { Text(text = "Alergia") },
-                                modifier = Modifier.fillMaxWidth(),
-                                trailingIcon = {
-                                    Icon(
-                                        imageVector = Icons.Default.ArrowDropDown,
-                                        contentDescription = "Abrir menú",
-                                        modifier = Modifier.clickable { isAllergiesExpanded = true }
-                                    )
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    OutlinedTextField(
+                        value = selectedAllergies.joinToString(", ") { it.name },
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text(text = "Alergias Seleccionadas") },
+                        modifier = Modifier.fillMaxWidth(),
+                        trailingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.ArrowDropDown,
+                                contentDescription = "Abrir menú",
+                                modifier = Modifier.clickable { isAllergiesExpanded = true }
+                            )
+                        }
+                    )
+
+                    DropdownMenu(
+                        expanded = isAllergiesExpanded,
+                        onDismissRequest = { isAllergiesExpanded = false },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        allergies.forEach { allergy ->
+                            DropdownMenuItem(
+                                text = {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Checkbox(
+                                            checked = selectedAllergies.contains(allergy),
+                                            onCheckedChange = null
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(text = allergy.name)
+                                    }
+                                },
+                                onClick = {
+                                    if (selectedAllergies.contains(allergy)) {
+                                        selectedAllergies.remove(allergy)
+                                    } else {
+                                        selectedAllergies.add(allergy)
+                                    }
                                 }
                             )
-
-                            DropdownMenu(
-                                expanded = isAllergiesExpanded,
-                                onDismissRequest = { isAllergiesExpanded = false },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                allergies.forEach { allergy ->
-                                    DropdownMenuItem(
-                                        text = { Text(text = allergy.name) },
-                                        onClick = {
-                                            selectedAllergy = allergy
-                                            isAllergiesExpanded = false
-                                        }
-                                    )
-                                }
-                            }
                         }
                     }
-
                 }
 
             }
-
-            // Botón para agregar nueva alergia
+            // Button to add new allergy
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
@@ -267,15 +242,15 @@ fun PreferencesScreen(userId: Int,viewModelA: AllergyViewModel = viewModel(),vie
                     onClick = {
                         // Acción al presionar el botón: lógica para agregar nueva alergia
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)), // Color del botón
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),
                     shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier // Espaciado entre el botón y otros elementos
+                    modifier = Modifier
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            imageVector = Icons.Default.Add, // Ícono predeterminado tipo "+"
+                            imageVector = Icons.Default.Add,
                             contentDescription = "Agregar alergia",
-                            tint = Color.White, // Color del ícono
+                            tint = Color.White,
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
@@ -284,32 +259,33 @@ fun PreferencesScreen(userId: Int,viewModelA: AllergyViewModel = viewModel(),vie
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
-            // Botón para enviar
+            // Send button
             Button(
                 onClick = {
                     val preference = Preference(
-                        id = 0, // Si es autogenerado en el servidor, puedes enviar un valor vacío o 0
-                        user_id = userId, // Usa el ID del usuario recibido
+                        id = 0,
+                        user_id = userId, // Use the received user ID
                         is_vegetarian = selectedPreferences.contains("Vegetariano"),
                         is_gluten_free = selectedPreferences.contains("Sin gluten"),
                         is_vegan = selectedPreferences.contains("Vegano"),
                         dietary_goals = dietGoal,
-                        created_at = null, // Deja vacío; usualmente el servidor lo genera
+                        created_at = null,
                         updated_at = null
                     )
                     viewModelP.createPreference(preference)
-                    val allergyId = selectedAllergy?.id ?: 0 // Usa 0 como valor predeterminado
+                    val allergyIds = selectedAllergies.mapNotNull { it.id }
+
                     val userAllergy = UserAllergy(
-                        id = 0, // Si es autogenerado en el servidor, puedes enviar un valor vacío o 0
-                        user_id = userId, // Usa el ID del usuario recibido
-                        allergy_id = allergyId,
-                        created_at = null, // Deja vacío; usualmente el servidor lo genera
+                        id = 0,
+                        user_id = userId, // Use the received user ID
+                        allergy_ids = allergyIds,
+                        created_at = null,
                         updated_at = null
                     )
                     viewModelUA.createUserAllergy(userAllergy)
 
-                    // Redirige a otro Activity después del registro exitoso
-                    val intent = Intent(context, GenerateMenuActivity::class.java) // Reemplaza `AnotherActivity` con tu destino
+                    // Redirect to another Activity after successful registration
+                    val intent = Intent(context, GenerateMenuActivity::class.java)
                     context.startActivity(intent)
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),
@@ -320,8 +296,29 @@ fun PreferencesScreen(userId: Int,viewModelA: AllergyViewModel = viewModel(),vie
             ) {
                 Text(text = "Enviar", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
             }
-
         }
+    }
 
+}
+
+@Composable
+fun PreferencesHeader(context: Context) {
+
+    Box(modifier = Modifier.height(200.dp)) {
+        Image(
+            painter = painterResource(id = R.drawable.image_main),
+            contentDescription = "Imagen de fondo",
+            modifier = Modifier.fillMaxWidth().height(200.dp),
+            contentScale = ContentScale.Crop
+        )
+        Image(
+            painter = painterResource(id = R.drawable.logo),
+            contentDescription = "Logo circular",
+            modifier = Modifier
+                .size(80.dp)
+                .align(Alignment.Center)
+                .clip(CircleShape)
+                .clickable { context.startActivity(Intent(context, MainActivity::class.java)) }
+        )
     }
 }

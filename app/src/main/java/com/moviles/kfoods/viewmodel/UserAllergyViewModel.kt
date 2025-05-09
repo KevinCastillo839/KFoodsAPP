@@ -42,7 +42,5 @@ class UserAllergyViewModel (application: Application) : AndroidViewModel(applica
                 isLoading.value = false
             }
         }
-
-
     }
 }
