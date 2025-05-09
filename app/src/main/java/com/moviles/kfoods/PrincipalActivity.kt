@@ -1,9 +1,7 @@
 package com.moviles.kfoods
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -36,9 +34,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.*
+import androidx.navigation.navArgument
 import com.moviles.kfoods.factory.AuthViewModelFactory
-import com.moviles.kfoods.models.User
 import com.moviles.kfoods.viewmodel.AuthViewModel
 import kotlin.getValue
 
@@ -72,7 +71,7 @@ fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
                 selectedItem = index
                 // Cambiar la pantalla cuando se selecciona un item
                 when (index) {
-                    0 -> navController.navigate("user")  // Navegar a la pantalla de Usuario
+                    0 -> navController.navigate("user/$userId") // Navegar a la pantalla de Usuario
                     1 -> navController.navigate("book")  // Navegar a la pantalla de Libro
                     2 -> navController.navigate("home")  // Navegar a la pantalla Principal
                     3 -> navController.navigate("cart")  // Navegar a la pantalla de Carrito
@@ -93,9 +92,15 @@ fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
                 composable("home") {
                     HomeScreen() // Pantalla Principal
                 }
-                composable("user") {
-                    UserScreen(authViewModel = authViewModel) // Pasar el AuthViewModel
+                composable(
+                    route = "user/{userId}",  // <- Notación de argumento
+                    arguments = listOf(navArgument("userId") { type = NavType.IntType })  // <- Declarar el tipo de argumento
+                ) { backStackEntry ->
+                    val userId = backStackEntry.arguments?.getInt("userId") ?: -1
+
+                    UserScreen(authViewModel = authViewModel, userId = userId)
                 }
+
                 composable("book") {
                     BookScreen() // Pantalla de Libro
                 }
@@ -127,8 +132,14 @@ fun HomeScreen() {
 
 
 @Composable
-fun UserScreen(authViewModel: AuthViewModel) {
+fun UserScreen(authViewModel: AuthViewModel, userId: Int) {
     val context = LocalContext.current
+    LaunchedEffect(userId) {
+        authViewModel.getUserById(userId)
+    }
+    // Observamos solo lo necesario
+    val isLoading by rememberUpdatedState(authViewModel.isLoading.value)
+    val userResult by authViewModel.userResult.observeAsState(initial = null)
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -177,10 +188,17 @@ fun UserScreen(authViewModel: AuthViewModel) {
 
             // Nombre del usuario
             Text(
-                text = "Nombre de Usuario",
+                text = userResult?.full_name ?: "Nombre de Usuario",  // Muestra el nombre si está disponible
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF1E1E1E)
+            )
+
+            // Correo del usuario
+            Text(
+                text = userResult?.email ?: "Correo no disponible",  // Muestra el correo si está disponible
+                fontSize = 16.sp,
+                color = Color(0xFF757575)
             )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -244,8 +262,6 @@ fun UserScreen(authViewModel: AuthViewModel) {
         }
     }
 }
-
-
 
 
 @OptIn(ExperimentalMaterial3Api::class)
