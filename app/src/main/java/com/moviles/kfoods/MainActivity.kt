@@ -220,6 +220,15 @@ fun LoginScreen(
                     color = Color.White
                 )
             }
+            LaunchedEffect(loginResult) {
+                loginResult?.let { loginResponse ->
+                    val intent = Intent(context, PrincipalActivity::class.java)
+                    intent.putExtra("id", loginResponse.userId) // Aquí sí, porque userId es Int
+                    context.startActivity(intent)
+                }
+            }
+
+
 
             // Mostrar el mensaje del error si hay alguno
             LaunchedEffect(errorMessage) {

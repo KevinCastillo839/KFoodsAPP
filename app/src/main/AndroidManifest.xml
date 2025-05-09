@@ -17,11 +17,15 @@
         android:theme="@style/Theme.KFoods"
         tools:targetApi="31">
         <activity
-            android:name=".PreferenceActivity"
+            android:name=".UserActivity"
             android:exported="false"
-            android:label="@string/title_activity_preference"
-            android:theme="@style/Theme.KFoods"/>
-
+            android:label="@string/title_activity_user"
+            android:theme="@style/Theme.KFoods" />
+        <activity
+            android:name=".PrincipalActivity"
+            android:exported="false"
+            android:label="@string/title_activity_principal"
+            android:theme="@style/Theme.KFoods" />
         <activity
             android:name=".ResetPasswordActivity"
             android:exported="false"

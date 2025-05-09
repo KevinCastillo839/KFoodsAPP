@@ -22,6 +22,8 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import androidx.lifecycle.viewModelScope
+
 
 class AuthViewModel(application: Application) : AndroidViewModel(application) {
     private val context: Context = application.applicationContext
@@ -30,7 +32,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     val registrationResult = MutableLiveData<Boolean>()
     var isLoading = mutableStateOf(false)
     var successMessage = mutableStateOf("")
-
+    val userResult = MutableLiveData<User?>()
     val loginResult = MutableLiveData<LoginResponse?>()
     val errorMessage = MutableLiveData<String>()
     private val sharedPreferencesManager = SharedPreferencesManager(context)
@@ -178,7 +180,35 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
+
+    fun getUserById(userId: Int) {
+        Log.d("AuthViewModel", "Iniciando la obtención del usuario con ID: $userId") // Log inicial
+
+        viewModelScope.launch {
+            try {
+                val response = RetrofitInstance.api.getUserById(userId)
+                Log.d("AuthViewModel", "Respuesta recibida: $response") // Log de la respuesta
+
+                if (response.isSuccessful) {
+                    val user = response.body()
+                    Log.d("AuthViewModel", "Usuario obtenido exitosamente: $user") // Log de éxito
+
+                    userResult.value = user // Establecer el resultado
+                    errorMessage.value = "" // Limpiar cualquier error
+                } else {
+                    Log.e("AuthViewModel", "Error en la respuesta: Código ${response.code()}") // Log de error de respuesta
+                    errorMessage.value = "Error al obtener el usuario"
+                }
+            } catch (e: Exception) {
+                Log.e("AuthViewModel", "Excepción al obtener el usuario: ${e.message}", e) // Log de excepción
+                errorMessage.value = "Error inesperado: ${e.message}"
+            }
+        }
+    }
+
 }
+
+
 private fun getSimplifiedMessage(responseBody: String?): String {
     return responseBody?.let {
         // Aquí puedes agregar lógica adicional si el cuerpo es JSON o tiene formato complejo
