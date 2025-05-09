@@ -6,6 +6,7 @@ import com.moviles.kfoods.models.dto.LoginResponse
 import com.moviles.kfoods.models.dto.ResetPassword
 import com.moviles.kfoods.models.dto.ResetPasswordRequest
 import com.moviles.kfoods.models.User
+import com.moviles.kfoods.models.UserAllergy
 import com.moviles.kfoods.models.dto.RegisterResponse
 import retrofit2.Response
 import retrofit2.http.Body
@@ -19,6 +20,9 @@ interface ApiService {
 
     @POST("api/auth/login")
     suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
+
+    @GET("api/auth/user/{id}")
+    suspend fun getUserById(@Path("id") id: Int): Response<User>
 
     @GET("api/allergy")
     suspend fun getAllergies(): Response<List<Allergy>>
@@ -51,6 +55,9 @@ interface ApiService {
     // Eliminar una preferencia por ID
     @DELETE("api/preference/{id}")
     suspend fun deletePreference(@Path("id") id: Int): Response<ApiResponse>
+
+    @POST("api/user_allergy")
+    suspend fun createUserAllergy(@Body request: UserAllergy): Response<Preference>
 
 
 }

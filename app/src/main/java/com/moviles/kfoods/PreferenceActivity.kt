@@ -38,10 +38,13 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontWeight
 import com.moviles.kfoods.models.Allergy
 import com.moviles.kfoods.models.Preference
+import com.moviles.kfoods.models.UserAllergy
 import com.moviles.kfoods.viewmodel.AllergyViewModel
+import com.moviles.kfoods.viewmodel.UserAllergyViewModel
 import com.moviles.kfoods.viewmodels.PreferenceViewModel
 
 class PreferenceActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Obtener ID desde el Intent
@@ -55,7 +58,7 @@ class PreferenceActivity : ComponentActivity() {
 }
 
 @Composable
-fun PreferencesScreen(userId: Int,viewModelA: AllergyViewModel = viewModel(),viewModelP: PreferenceViewModel = viewModel()) {
+fun PreferencesScreen(userId: Int,viewModelA: AllergyViewModel = viewModel(),viewModelP: PreferenceViewModel = viewModel(),viewModelUA: UserAllergyViewModel = viewModel()) {
     val preferences = listOf("Vegetariano", "Sin gluten", "Vegano", "Alta en proteínas", "Baja en calorías")
     val selectedPreferences = remember { mutableStateListOf<String>() }
     val allergies by viewModelA.allergies.collectAsState(initial = emptyList())
@@ -295,6 +298,19 @@ fun PreferencesScreen(userId: Int,viewModelA: AllergyViewModel = viewModel(),vie
                         updated_at = null
                     )
                     viewModelP.createPreference(preference)
+                    val allergyId = selectedAllergy?.id ?: 0 // Usa 0 como valor predeterminado
+                    val userAllergy = UserAllergy(
+                        id = 0, // Si es autogenerado en el servidor, puedes enviar un valor vacío o 0
+                        user_id = userId, // Usa el ID del usuario recibido
+                        allergy_id = allergyId,
+                        created_at = null, // Deja vacío; usualmente el servidor lo genera
+                        updated_at = null
+                    )
+                    viewModelUA.createUserAllergy(userAllergy)
+
+                    // Redirige a otro Activity después del registro exitoso
+                    val intent = Intent(context, GenerateMenuActivity::class.java) // Reemplaza `AnotherActivity` con tu destino
+                    context.startActivity(intent)
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),
                 shape = RoundedCornerShape(12.dp),
