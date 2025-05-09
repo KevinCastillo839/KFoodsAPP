@@ -75,7 +75,6 @@ fun LoginScreen(
 
     val context = LocalContext.current
 
-    // SnackbarHostState para mostrar mensajes
     val snackbarHostState = remember { SnackbarHostState() }
 
     Box(modifier = modifier.fillMaxSize()) {
@@ -207,7 +206,7 @@ fun LoginScreen(
                         authViewModel.login(email, password)
                     }
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -228,6 +227,18 @@ fun LoginScreen(
                 }
             }
 
+            LaunchedEffect(loginResult) {
+                loginResult?.let {
+                    // Verifica si el token es no nulo o si el login fue exitoso de alguna otra forma
+                    if (it.token != null) {
+                        context.startActivity(Intent(context, AllergyActivity::class.java))
+                    } else {
+                        Log.e("LoginScreen", "Token es nulo, no se pudo iniciar sesión correctamente.")
+                    }
+                }
+            }
+
+
             Spacer(modifier = Modifier.height(16.dp))
 
             TextButton(onClick = {
@@ -243,7 +254,6 @@ fun LoginScreen(
             }
         }
 
-        // Mostrar el Snackbar
         SnackbarHost(hostState = snackbarHostState)
     }
 }
