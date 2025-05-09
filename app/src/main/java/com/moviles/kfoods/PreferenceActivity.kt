@@ -69,7 +69,7 @@ fun PreferencesScreen(userId: Int,viewModelA: AllergyViewModel = viewModel(),vie
     val selectedAllergies = remember { mutableStateListOf<Allergy>() }
 
     LaunchedEffect(Unit) {
-        viewModelA.getAllAllergies()
+        viewModelA.getAllergies()
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
