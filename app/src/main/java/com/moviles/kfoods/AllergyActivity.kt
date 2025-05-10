@@ -22,7 +22,8 @@ class AllergyActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        allergyViewModel.fetchAllergies()
+        //allergyViewModel.fetchAllergies()
+        allergyViewModel.getAllergies()
 
         setContent {
             KFoodsTheme {

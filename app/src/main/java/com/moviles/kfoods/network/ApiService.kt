@@ -49,9 +49,24 @@ interface ApiService {
     @DELETE("api/preference/{id}")
     suspend fun deletePreference(@Path("id") id: Int): Response<ApiResponse>
 
+    @GET("users/{id}")
+    suspend fun getUserById(@Path("id") id: Int): Response<User>
+
+
     // UserAllergy
     @POST("api/user_allergy")
     suspend fun createUserAllergy(@Body request: UserAllergy): Response<Preference>
 
+    @GET("api/allergy")
+    suspend fun getAllergies(): Response<List<Allergy>>
+
+    @POST("api/allergy")
+    suspend fun createAllergy(@Body allergy: Allergy): Response<Allergy>
+
+    @PUT("api/allergy/{id}")
+    suspend fun updateAllergy(@Path("id") id: Int, @Body allergy: Allergy): Response<Allergy>
+
+    @DELETE("api/allergy/{id}")
+    suspend fun deleteAllergy(@Path("id") id: Int): Response<ApiResponse>
 
 }
