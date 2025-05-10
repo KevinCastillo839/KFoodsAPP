@@ -9,8 +9,10 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -78,7 +80,7 @@ fun PreferencesScreen(userId: Int,viewModelA: AllergyViewModel = viewModel(),vie
         // Form
         Column(modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 160.dp)
+                .padding(top = 100.dp)
                 .shadow(
                     elevation = 8.dp,
                     shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
@@ -93,14 +95,13 @@ fun PreferencesScreen(userId: Int,viewModelA: AllergyViewModel = viewModel(),vie
                     ),
                     shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
                 )
-                .padding(horizontal = 24.dp, vertical = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
         )  {
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Top,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 24.dp, vertical = 16.dp)
+                    .verticalScroll(rememberScrollState()), // Scroll modifier
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = "Preferencias",
@@ -115,7 +116,7 @@ fun PreferencesScreen(userId: Int,viewModelA: AllergyViewModel = viewModel(),vie
                     fontSize = 16.sp,
                     color = Color.Gray
                 )
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
                 // Preferences Options
                 preferences.forEach { preference ->
@@ -123,7 +124,7 @@ fun PreferencesScreen(userId: Int,viewModelA: AllergyViewModel = viewModel(),vie
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 4.dp)
+                            .padding(vertical = 1.dp)
                     ) {
                         Checkbox(
                             checked = selectedPreferences.contains(preference),
@@ -132,11 +133,11 @@ fun PreferencesScreen(userId: Int,viewModelA: AllergyViewModel = viewModel(),vie
                                 else selectedPreferences.remove(preference)
                             }
                         )
-                        Text(text = preference, modifier = Modifier.padding(start = 8.dp))
+                        Text(text = preference, modifier = Modifier.padding(start = 2.dp))
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 // Diet Goal Selector
                 Text(text = "Seleccione su objetivo de dieta", fontSize = 16.sp, color = Color.Gray)
@@ -146,7 +147,9 @@ fun PreferencesScreen(userId: Int,viewModelA: AllergyViewModel = viewModel(),vie
                         onValueChange = {},
                         readOnly = true, // Avoid direct editing
                         label = { Text(text = "Objetivo de dieta") },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight(),
                         trailingIcon = {
                             Icon(
                                 imageVector = Icons.Default.ArrowDropDown,
@@ -177,7 +180,7 @@ fun PreferencesScreen(userId: Int,viewModelA: AllergyViewModel = viewModel(),vie
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 // Allergy selection
                 Text(text = "Agregue sus alergias", fontSize = 16.sp, color = Color.Gray)
@@ -188,7 +191,8 @@ fun PreferencesScreen(userId: Int,viewModelA: AllergyViewModel = viewModel(),vie
                         onValueChange = {},
                         readOnly = true,
                         label = { Text(text = "Alergias Seleccionadas") },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth()
+                            .wrapContentHeight(),
                         trailingIcon = {
                             Icon(
                                 imageVector = Icons.Default.ArrowDropDown,
@@ -229,15 +233,9 @@ fun PreferencesScreen(userId: Int,viewModelA: AllergyViewModel = viewModel(),vie
                     }
                 }
 
-            }
-            // Button to add new allergy
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-            ) {
+
+                Spacer(modifier = Modifier.height(16.dp))
+                // Button to add new allergy
                 Button(
                     onClick = {
                         // Acción al presionar el botón: lógica para agregar nueva alergia
@@ -257,44 +255,50 @@ fun PreferencesScreen(userId: Int,viewModelA: AllergyViewModel = viewModel(),vie
                         Text(text = "Agregar nueva Alergia", color = Color.White)
                     }
                 }
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            // Send button
-            Button(
-                onClick = {
-                    val preference = Preference(
-                        id = 0,
-                        user_id = userId, // Use the received user ID
-                        is_vegetarian = selectedPreferences.contains("Vegetariano"),
-                        is_gluten_free = selectedPreferences.contains("Sin gluten"),
-                        is_vegan = selectedPreferences.contains("Vegano"),
-                        dietary_goals = dietGoal,
-                        created_at = null,
-                        updated_at = null
-                    )
-                    viewModelP.createPreference(preference)
-                    val allergyIds = selectedAllergies.mapNotNull { it.id }
 
-                    val userAllergy = UserAllergy(
-                        id = 0,
-                        user_id = userId, // Use the received user ID
-                        allergy_ids = allergyIds,
-                        created_at = null,
-                        updated_at = null
-                    )
-                    viewModelUA.createUserAllergy(userAllergy)
+                Spacer(modifier = Modifier.height(16.dp))
+                // Send button
+                Button(
+                    onClick = {
+                        val preference = Preference(
+                            id = 0,
+                            user_id = userId, // Use the received user ID
+                            is_vegetarian = selectedPreferences.contains("Vegetariano"),
+                            is_gluten_free = selectedPreferences.contains("Sin gluten"),
+                            is_vegan = selectedPreferences.contains("Vegano"),
+                            dietary_goals = dietGoal,
+                            created_at = null,
+                            updated_at = null
+                        )
+                        viewModelP.createPreference(preference)
+                        val allergyIds = selectedAllergies.mapNotNull { it.id }
 
-                    // Redirect to another Activity after successful registration
-                    val intent = Intent(context, GenerateMenuActivity::class.java)
-                    context.startActivity(intent)
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-            ) {
-                Text(text = "Enviar", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        val userAllergy = UserAllergy(
+                            id = 0,
+                            user_id = userId, // Use the received user ID
+                            allergy_ids = allergyIds,
+                            created_at = null,
+                            updated_at = null
+                        )
+                        viewModelUA.createUserAllergy(userAllergy)
+
+                        // Redirect to another Activity after successful registration
+                        val intent = Intent(context, GenerateMenuActivity::class.java)
+                        context.startActivity(intent)
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                ) {
+                    Text(
+                        text = "Enviar",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
             }
         }
     }
@@ -304,7 +308,7 @@ fun PreferencesScreen(userId: Int,viewModelA: AllergyViewModel = viewModel(),vie
 @Composable
 fun PreferencesHeader(context: Context) {
 
-    Box(modifier = Modifier.height(200.dp)) {
+    Box(modifier = Modifier.height(120.dp)) {
         Image(
             painter = painterResource(id = R.drawable.image_main),
             contentDescription = "Imagen de fondo",
@@ -315,7 +319,7 @@ fun PreferencesHeader(context: Context) {
             painter = painterResource(id = R.drawable.logo),
             contentDescription = "Logo circular",
             modifier = Modifier
-                .size(80.dp)
+                .size(70.dp)
                 .align(Alignment.Center)
                 .clip(CircleShape)
                 .clickable { context.startActivity(Intent(context, MainActivity::class.java)) }
