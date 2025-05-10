@@ -18,18 +18,22 @@ import com.moviles.kfoods.models.Allergy
 class AllergyActivity : ComponentActivity() {
 
     private val allergyViewModel: AllergyViewModel by viewModels()
-    @OptIn(ExperimentalMaterial3Api::class)
 
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        //allergyViewModel.fetchAllergies()
         allergyViewModel.getAllergies()
 
         setContent {
             KFoodsTheme {
                 Scaffold(
                     topBar = {
-                        TopAppBar(title = { Text("Lista de Alergias") })
+                        TopAppBar(
+                            title = { Text("Lista de Alergias") },
+                            actions = {
+                                // Puedes agregar iconos o acciones aquí si lo deseas
+                            }
+                        )
                     }
                 ) { padding ->
                     AllergyScreen(

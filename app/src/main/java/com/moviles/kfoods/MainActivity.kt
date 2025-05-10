@@ -236,17 +236,6 @@ fun LoginScreen(
                 }
             }
 
-            LaunchedEffect(loginResult) {
-                loginResult?.let {
-                    // Verifica si el token es no nulo o si el login fue exitoso de alguna otra forma
-                    if (it.token != null) {
-                        context.startActivity(Intent(context, AllergyActivity::class.java))
-                    } else {
-                        Log.e("LoginScreen", "Token es nulo, no se pudo iniciar sesión correctamente.")
-                    }
-                }
-            }
-
 
             Spacer(modifier = Modifier.height(16.dp))
 

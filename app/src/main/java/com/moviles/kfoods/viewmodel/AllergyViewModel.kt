@@ -46,7 +46,6 @@ class AllergyViewModel(application: Application) : AndroidViewModel(application)
                     response.body()?.let { newAllergy ->
                         _allergies.value = _allergies.value + newAllergy
                     }
-                    // _allergies.value = response.body() ?: emptyList()
                     Log.d("AllergyViewModel", "Alergias obtenidas: ${response.body()}")
                 } else {
                     val errorBody = response.errorBody()?.string()
