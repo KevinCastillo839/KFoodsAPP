@@ -2,12 +2,18 @@ package com.moviles.kfoods
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -17,6 +23,8 @@ import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
+import androidx.compose.foundation.lazy.items
+
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -32,6 +40,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
@@ -39,7 +48,15 @@ import androidx.navigation.compose.*
 import androidx.navigation.navArgument
 import com.moviles.kfoods.factory.AuthViewModelFactory
 import com.moviles.kfoods.viewmodel.AuthViewModel
+import com.moviles.kfoods.viewmodel.MenuViewModel
+import com.moviles.kfoods.viewmodel.MenuViewModelFactory
 import kotlin.getValue
+
+import com.google.accompanist.pager.*
+
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.rememberPagerState
+
 
 class PrincipalActivity : ComponentActivity() {
     private val authViewModel: AuthViewModel by viewModels {
@@ -49,7 +66,8 @@ class PrincipalActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            val userId = intent.getIntExtra("id", -1) //Receive the userId as a parameter
+            val userId = intent.getIntExtra("id", 1) // Por defecto 1 en lugar de -1
+//Receive the userId as a parameter
             KFoodsTheme {
                 PrincipalScreen(userId = userId)
                 // Pass the userId to PrincipalScreen
@@ -75,7 +93,7 @@ fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
 
                 when (index) {
                     0 -> navController.navigate("user/$userId") // Navigate to the User screen
-                    1 -> navController.navigate("recipe")  // Navigate to the recipe screen
+                    1 -> navController.navigate("home/$userId")
                     2 -> navController.navigate("home")  // Navigate to the home screen
                     3 -> navController.navigate("cart")  // Navigate to the cart screen
                     4 -> navController.navigate("map")  // Navigate to the map screen
@@ -91,10 +109,25 @@ fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
             contentAlignment = Alignment.Center
         ) {
             // use nahost to navigate in the screens
-            NavHost(navController = navController, startDestination = "home") {
-                composable("home") {
-                    HomeScreen() // Pantalla Principal
+            NavHost(navController = navController, startDestination = "home/$userId") {
+                composable(
+                    route = "home/{userId}",
+                    arguments = listOf(navArgument("userId") { type = NavType.IntType })
+                ) { backStackEntry ->
+
+                    val userId = backStackEntry.arguments?.getInt("userId") ?: -1
+
+                    // Crear el factory aquí con el userId
+                    val factory = MenuViewModelFactory(userId)
+
+                    // Obtener el ViewModel con la factory personalizada
+                    val menuViewModel: MenuViewModel = viewModel(factory = factory)
+
+                    HomeScreen(menuViewModel = menuViewModel, userId = userId)
                 }
+
+
+
                 composable(
                     route = "user/{userId}",
                     arguments = listOf(navArgument("userId") { type = NavType.IntType })  // <-declarate argument type
@@ -119,20 +152,220 @@ fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
 }
 
 
+@OptIn(ExperimentalPagerApi::class)
 @Composable
-fun HomeScreen() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+fun HomeScreen(menuViewModel: MenuViewModel, userId: Int) {
+    val menuList by menuViewModel.weeklyMenus.observeAsState(emptyList())
+    val isLoading by menuViewModel.isLoading.observeAsState(false)
+    val errorMessage by menuViewModel.errorMessage.observeAsState()
+
+    val weeklyPagerState = rememberPagerState()
+
+    // Paleta de colores similar a KFoods
+    val primaryColor = Color(0xFFFF5722) // Naranja vibrante
+    val secondaryColor = Color(0xFFFFE0B2) // Naranja claro pastel
+    val backgroundColor = Color.White // Fondo blanco
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundColor)
+            .padding(horizontal = 16.dp, vertical = 8.dp) // Menor padding superior
     ) {
-        Text(
-            text = "Pantalla Principal",
-            style = MaterialTheme.typography.headlineMedium,
-            textAlign = TextAlign.Center
+        // Logo en la esquina superior izquierda, más arriba y más grande
+        Image(
+            painter = painterResource(id = R.drawable.logo),
+            contentDescription = "Logo de la app",
+            modifier = Modifier
+                .size(60.dp) // Aumentado el tamaño
+                .align(Alignment.Start)
+                .clip(CircleShape)
         )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "Usuario ID: $userId",
+            style = MaterialTheme.typography.titleMedium.copy(color = primaryColor),
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
+        if (isLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = primaryColor)
+            }
+        } else if (!errorMessage.isNullOrEmpty()) {
+            Text(
+                text = errorMessage ?: "",
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+        } else {
+            if (menuList.isEmpty()) {
+                Text(
+                    "No hay menús disponibles.",
+                    style = MaterialTheme.typography.bodyLarge.copy(color = Color.Gray),
+                    modifier = Modifier.padding(16.dp)
+                )
+                return@Column
+            }
+
+            HorizontalPager(
+                count = menuList.size,
+                state = weeklyPagerState,
+                modifier = Modifier.weight(1f)
+            ) { weekPage ->
+
+                val weeklyMenuResponse = menuList[weekPage]
+                val dailyMenus = weeklyMenuResponse.weekly_menus
+                val dailyPagerState = rememberPagerState()
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(vertical = 8.dp),
+                    shape = RoundedCornerShape(20.dp),
+                    elevation = CardDefaults.cardElevation(8.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White) // Aquí blanco en vez de secondaryColor
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp)
+                    ) {
+                        Text(
+                            text = "Menú creado el: ${weeklyMenuResponse.created_at}",
+                            style = MaterialTheme.typography.titleMedium.copy(color = primaryColor),
+                            modifier = Modifier.padding(bottom = 12.dp)
+                        )
+
+                        if (dailyMenus.isNotEmpty()) {
+                            HorizontalPager(
+                                count = dailyMenus.size,
+                                state = dailyPagerState,
+                                modifier = Modifier.weight(1f)
+                            ) { dayPage ->
+                                val dailyMenu = dailyMenus[dayPage]
+
+                                Column(
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    Text(
+                                        text = "Día: ${dailyMenu.day_of_week}",
+                                        style = MaterialTheme.typography.titleLarge.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            color = primaryColor
+                                        ),
+                                        modifier = Modifier.padding(bottom = 4.dp)
+                                    )
+                                    Text(
+                                        text = dailyMenu.menu.name,
+                                        style = MaterialTheme.typography.titleMedium.copy(color = Color.DarkGray),
+                                        modifier = Modifier.padding(bottom = 8.dp)
+                                    )
+                                    Text(
+                                        text = dailyMenu.menu.description,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        maxLines = 3,
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier.padding(bottom = 12.dp)
+                                    )
+
+                                    Text(
+                                        text = "Recetas",
+                                        style = MaterialTheme.typography.titleMedium.copy(
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = primaryColor
+                                        ),
+                                        modifier = Modifier.padding(bottom = 8.dp)
+                                    )
+
+                                    LazyColumn(
+                                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        items(dailyMenu.menu.recipes) { recipe ->
+                                            Card(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .shadow(4.dp, RoundedCornerShape(12.dp)),
+                                                shape = RoundedCornerShape(12.dp),
+                                                colors = CardDefaults.cardColors(containerColor = Color.White)
+                                            ) {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .padding(16.dp)
+                                                        .fillMaxWidth()
+                                                ) {
+                                                    Row(
+                                                        verticalAlignment = Alignment.CenterVertically,
+                                                        modifier = Modifier.align(Alignment.CenterStart)
+                                                    ) {
+                                                        Box(
+                                                            modifier = Modifier
+                                                                .size(80.dp)
+                                                                .clip(RoundedCornerShape(8.dp))
+                                                                .background(primaryColor.copy(alpha = 0.2f)),
+                                                            contentAlignment = Alignment.Center
+                                                        ) {
+                                                            Text("Img", color = primaryColor)
+                                                        }
+                                                        Spacer(modifier = Modifier.width(16.dp))
+                                                        Column(
+                                                            modifier = Modifier.weight(1f)
+                                                        ) {
+                                                            Text(
+                                                                text = recipe.name,
+                                                                style = MaterialTheme.typography.titleSmall.copy(
+                                                                    fontWeight = FontWeight.Bold,
+                                                                    color = Color(0xFF3E3E3E)
+                                                                ),
+                                                                maxLines = 1,
+                                                                overflow = TextOverflow.Ellipsis
+                                                            )
+                                                            Spacer(modifier = Modifier.height(4.dp))
+                                                            Text(
+                                                                text = "Categoría: ${recipe.category}",
+                                                                style = MaterialTheme.typography.bodySmall.copy(color = Color.Gray)
+                                                            )
+                                                        }
+                                                    }
+
+                                                    // Recuadro naranja abajo a la derecha con el tiempo de preparación
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .align(Alignment.BottomEnd)
+                                                            .background(
+                                                                color = primaryColor,
+                                                                shape = RoundedCornerShape(8.dp)
+                                                            )
+                                                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                                                    ) {
+                                                        Text(
+                                                            text = "Prep: ${recipe.preparation_time} min",
+                                                            style = MaterialTheme.typography.bodySmall.copy(
+                                                                color = Color.White,
+                                                                fontWeight = FontWeight.Bold
+                                                            )
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            Text(
+                                "No hay menú diario disponible para este menú semanal.",
+                                style = MaterialTheme.typography.bodyLarge.copy(color = Color.Gray),
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        }
     }
 }
-
 
 @Composable
 fun UserScreen(authViewModel: AuthViewModel, userId: Int) {
