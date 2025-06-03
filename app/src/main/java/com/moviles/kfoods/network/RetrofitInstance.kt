@@ -43,4 +43,13 @@ object RetrofitInstance {
             .build()
             .create(ApiService::class.java)
     }
+    val menuApi: MenuApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(API_BASE_URL)
+            .client(client)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(MenuApiService::class.java)
+    }
+
 }
