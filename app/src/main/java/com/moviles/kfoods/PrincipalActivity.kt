@@ -47,6 +47,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
+import coil.compose.AsyncImage
+import coil.compose.AsyncImagePainter
+import coil.compose.rememberAsyncImagePainter
 import com.moviles.kfoods.factory.AuthViewModelFactory
 import com.moviles.kfoods.viewmodel.AuthViewModel
 import com.moviles.kfoods.viewmodel.MenuViewModel
@@ -61,6 +64,7 @@ import com.google.accompanist.pager.rememberPagerState
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+import com.moviles.kfoods.common.Constants.IMAGES_BASE_URL
 import com.moviles.kfoods.models.dto.OverpassElement
 import com.moviles.kfoods.viewmodel.SupermarketViewModel
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
@@ -193,11 +197,7 @@ fun HomeScreen(menuViewModel: MenuViewModel, userId: Int) {
                 .clip(CircleShape)
         )
         Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "Usuario ID: $userId",
-            style = MaterialTheme.typography.titleMedium.copy(color = primaryColor),
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+
 
         if (isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -297,28 +297,26 @@ fun HomeScreen(menuViewModel: MenuViewModel, userId: Int) {
                                             Card(
                                                 modifier = Modifier
                                                     .fillMaxWidth()
-                                                    .shadow(4.dp, RoundedCornerShape(12.dp)),
-                                                shape = RoundedCornerShape(12.dp),
+                                                    .shadow(6.dp, RoundedCornerShape(16.dp)),
+                                                shape = RoundedCornerShape(16.dp),
                                                 colors = CardDefaults.cardColors(containerColor = Color.White)
                                             ) {
                                                 Box(
                                                     modifier = Modifier
-                                                        .padding(16.dp)
+                                                        .padding(20.dp)
                                                         .fillMaxWidth()
                                                 ) {
                                                     Row(
                                                         verticalAlignment = Alignment.CenterVertically,
                                                         modifier = Modifier.align(Alignment.CenterStart)
                                                     ) {
-                                                        Box(
+                                                        RemoteImage(
+                                                            IMAGES_BASE_URL + recipe.image_url,
                                                             modifier = Modifier
-                                                                .size(80.dp)
-                                                                .clip(RoundedCornerShape(8.dp))
-                                                                .background(primaryColor.copy(alpha = 0.2f)),
-                                                            contentAlignment = Alignment.Center
-                                                        ) {
-                                                            Text("Img", color = primaryColor)
-                                                        }
+                                                                .size(100.dp)
+                                                                .clip(RoundedCornerShape(12.dp))
+                                                        )
+
                                                         Spacer(modifier = Modifier.width(16.dp))
                                                         Column(
                                                             modifier = Modifier.weight(1f)
@@ -696,6 +694,29 @@ fun KFoodsTheme(content: @Composable () -> Unit) {
         colorScheme = lightColorScheme(),
         content = content
     )
+}
+@Composable
+fun RemoteImage(imageUrl: String, modifier: Modifier = Modifier) {
+    AsyncImage(
+        model = imageUrl,
+        contentDescription = null,
+        modifier = modifier,
+        contentScale = ContentScale.Crop,
+
+
+    )
+}
+
+@Composable
+fun FallbackImage(modifier: Modifier) {
+    Box(
+        modifier = modifier
+            .background(Color(0xFFFF5722).copy(alpha = 0.2f)) // Naranja claro
+            .clip(RoundedCornerShape(8.dp)),
+        contentAlignment = Alignment.Center
+    ) {
+        Text("Img", color = Color(0xFFFF5722), fontWeight = FontWeight.Bold)
+    }
 }
 
 

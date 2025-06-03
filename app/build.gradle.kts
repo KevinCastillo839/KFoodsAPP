@@ -75,6 +75,7 @@ dependencies {
     implementation ("com.google.android.gms:play-services-location:21.0.1")
     implementation ("com.google.accompanist:accompanist-permissions:0.31.5-beta")
     implementation ("org.osmdroid:osmdroid-android:6.1.16")
+    implementation("io.coil-kt:coil-compose:2.5.0")
 // o la última versión estable
 
 
