@@ -69,6 +69,22 @@ dependencies {
     implementation ("androidx.lifecycle:lifecycle-livedata-ktx:2.5.1")
     implementation ("androidx.navigation:navigation-compose:2.6.0")
 
+    implementation ("androidx.compose.material:material-icons-extended")
+    implementation ("com.google.accompanist:accompanist-pager:0.32.0")
+    implementation ("com.google.android.gms:play-services-location:21.0.1")
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.6.4")
+    implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
+    implementation ("com.google.android.gms:play-services-location:21.0.1")
+    implementation ("com.google.accompanist:accompanist-permissions:0.31.5-beta")
+    implementation ("org.osmdroid:osmdroid-android:6.1.16")
+    implementation("io.coil-kt:coil-compose:2.5.0")
+// o la última versión estable
+
+
+
+
+
+
     implementation("androidx.compose.material3:material3:1.2.0")
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
     }
