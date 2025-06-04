@@ -26,8 +26,26 @@ class AllergyViewModel(application: Application) : AndroidViewModel(application)
             isLoading.value = true
             try {
                 val response = RetrofitInstance.api.getAllergies()
+                if (response.isSuccessful && response.body() != null) {
+                    _allergies.value = response.body()!!
+                    Log.i("AllergyViewModel", "Fetched allergies: ${response.body()}")
+                } else {
+                    Log.e("AllergyViewModel", "Fetch failed: ${response.code()}")
+                }
+            } catch (e: Exception) {
+                Log.e("AllergyViewModelError", "Error fetching allergies: ${e.message}", e)
+            }
+        }
+    }
+
+    fun addAllergy(allergy: Allergy) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitInstance.api.createAllergy(allergy)
                 if (response.isSuccessful) {
-                    _allergies.value = response.body() ?: emptyList()
+                    response.body()?.let { newAllergy ->
+                        _allergies.value = _allergies.value + newAllergy
+                    }
                     Log.d("AllergyViewModel", "Alergias obtenidas: ${response.body()}")
                 } else {
                     val errorBody = response.errorBody()?.string()
@@ -44,5 +62,42 @@ class AllergyViewModel(application: Application) : AndroidViewModel(application)
                 isLoading.value = false
             }
         }
+    }
+
+    fun updateAllergy(allergy: Allergy) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitInstance.api.updateAllergy(allergy.id, allergy)
+                if (response.isSuccessful && response.body() != null) {
+                    val updated = response.body()!!
+                    _allergies.value = _allergies.value.map {
+                        if (it.id == updated.id) updated else it
+                    }
+                    Log.i("AllergyViewModel", "Allergy updated: $updated")
+                } else {
+                    Log.e("UpdateAllergy", "Failed: ${response.code()}")
+                }
+            } catch (e: Exception) {
+                Log.e("UpdateAllergy", "Error: ${e.message}")
+            }
+        }
+    }
+
+    fun deleteAllergy(allergyId: Int?) {
+        allergyId?.let { id ->
+            viewModelScope.launch {
+                try {
+                    val response = RetrofitInstance.api.deleteAllergy(id)
+                    if (response.isSuccessful) {
+                        _allergies.value = _allergies.value.filter { it.id != id }
+                        Log.i("AllergyViewModel", "Allergy deleted with id: $id")
+                    } else {
+                        Log.e("DeleteAllergy", "Failed: ${response.code()}")
+                    }
+                } catch (e: Exception) {
+                    Log.e("DeleteAllergy", "Error: ${e.message}")
+                }
+            }
+        } ?: Log.e("DeleteAllergy", "Error: allergyId is null")
     }
 }

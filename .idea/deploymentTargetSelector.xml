@@ -8,6 +8,7 @@
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\kevin\.android\avd\Medium_Phone.avd" />
+
             </handle>
           </Target>
         </DropdownSelection>

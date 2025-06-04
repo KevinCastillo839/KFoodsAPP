@@ -235,10 +235,14 @@ fun PreferencesScreen(userId: Int,viewModelA: AllergyViewModel = viewModel(),vie
 
 
                 Spacer(modifier = Modifier.height(16.dp))
-                // Button to add new allergy
                 Button(
                     onClick = {
-                        // Acción al presionar el botón: lógica para agregar nueva alergia
+
+                        // Redirigir de nuevo a la pantalla de preferencias
+                        val intent = Intent(context, AllergyActivity::class.java)
+                        intent.putExtra("USER_ID", userId) // Mantener el ID de usuario
+                        context.startActivity(intent)
+
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),
                     shape = RoundedCornerShape(8.dp),
