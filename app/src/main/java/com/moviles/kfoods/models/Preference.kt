@@ -1,8 +1,11 @@
 package com.moviles.kfoods.models
 
-data class Preference (
-    val id: Int,
-    val user_id: Int,
-    val created_at: String?,
-    val updated_at: String?
+import com.google.gson.annotations.SerializedName
+
+data class Preference(
+    @SerializedName("id") val id: Int = 0,
+    @SerializedName("user_id") val userId: Int = 0,
+    @SerializedName("user") val user: User? = null,
+    @SerializedName("created_at") val createdAt: String = "",
+    @SerializedName("updated_at") val updatedAt: String? = null
 )

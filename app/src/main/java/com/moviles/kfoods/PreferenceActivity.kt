@@ -49,6 +49,7 @@ import com.moviles.kfoods.models.Preference
 import com.moviles.kfoods.models.UserAllergy
 import com.moviles.kfoods.models.UserDietaryGoal
 import com.moviles.kfoods.models.UserDietaryRestriction
+import com.moviles.kfoods.models.dto.CreatePreferenceRequestDto
 import com.moviles.kfoods.viewmodel.AllergyViewModel
 import com.moviles.kfoods.viewmodel.UserAllergyViewModel
 import com.moviles.kfoods.viewmodels.PreferenceViewModel
@@ -318,12 +319,7 @@ fun AddAllergyButton(userId: Int, context: Context) {
 fun SavePreferencesButton(userId: Int, viewModelP: PreferenceViewModel, onSaveClicked: () -> Unit) {
     Button(
         onClick = {
-            val preference = Preference(
-                id = 0,
-                user_id = userId,
-                created_at = null,
-                updated_at = null
-            )
+            val preference = CreatePreferenceRequestDto(user_id = userId)
             viewModelP.createPreferences(preference)
             onSaveClicked() // Actualizar estado de guardado
         },

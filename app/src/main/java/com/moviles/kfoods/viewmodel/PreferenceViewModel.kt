@@ -15,6 +15,7 @@ import com.moviles.kfoods.network.RetrofitInstance
 import com.moviles.kfoods.models.Preference
 import com.moviles.kfoods.models.UserDietaryGoal
 import com.moviles.kfoods.models.UserDietaryRestriction
+import com.moviles.kfoods.models.dto.CreatePreferenceRequestDto
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -126,32 +127,41 @@ class PreferenceViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
-    fun createPreferences(preference: Preference) {
+    fun createPreferences(request: CreatePreferenceRequestDto) {
         viewModelScope.launch {
-            _preferenceId.value = createPreference(preference)
+            _preferenceId.value = createPreference(request)
         }
-
     }
 
-    suspend fun createPreference(requestP: Preference): Int? {
+
+    suspend fun createPreference(requestP: CreatePreferenceRequestDto): Int? {
         return try {
             val response = RetrofitInstance.preferenceApi.createPreference(requestP)
             if (response.isSuccessful && response.body() != null) {
                 response.body()?.id // Retorna el ID generado
-
             } else {
                 val errorBody = response.errorBody()?.string()
-                Log.e("PreferenceViewModel", "Error al crear preferencia: $errorBody")
+                val code = response.code()
+                val message = response.message()
+
+                Log.e("PreferenceViewModel", "Error al crear preferencia:")
+                Log.e("PreferenceViewModel", "Código HTTP: $code")
+                Log.e("PreferenceViewModel", "Mensaje: $message")
+                Log.e("PreferenceViewModel", "Cuerpo error: $errorBody")
+
                 null
             }
         } catch (e: IOException) {
-            Log.e("PreferenceViewModel", "Error de red: ${e.message}")
+            Log.e("PreferenceViewModel", "Error de red preferencia: ${e.message}")
             null
         } catch (e: Exception) {
             Log.e("PreferenceViewModel", "Error inesperado: ${e.message}")
             null
         }
     }
+
+
+
 
     fun createDietaryGoals(requestG: UserDietaryGoal) {
         viewModelScope.launch {
@@ -170,7 +180,7 @@ class PreferenceViewModel(application: Application) : AndroidViewModel(applicati
                 }
             } catch (e: IOException) {
                 errorMessage.value = "Error de red: ${e.message}"
-                Log.e("DietaryGoalViewModel", "Error de red: ${e.message}")
+                Log.e("DietaryGoalViewModel", "Error de red dietary: ${e.message}")
             } catch (e: Exception) {
                 errorMessage.value = "Error inesperado: ${e.message}"
                 Log.e("DietaryGoalViewModel", "Error inesperado: ${e.message}")
@@ -195,7 +205,7 @@ class PreferenceViewModel(application: Application) : AndroidViewModel(applicati
                 }
             } catch (e: IOException) {
                 errorMessage.value = "Error de red: ${e.message}"
-                Log.e("DietaryRestrictionViewModel", "Error de red: ${e.message}")
+                Log.e("DietaryRestrictionViewModel", "Error de red restriction: ${e.message}")
             } catch (e: Exception) {
                 errorMessage.value = "Error inesperado: ${e.message}"
                 Log.e("DietaryRestrictionViewModel", "Error inesperado: ${e.message}")
