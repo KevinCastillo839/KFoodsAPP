@@ -49,7 +49,7 @@ interface ApiService {
     @DELETE("api/preference/{id}")
     suspend fun deletePreference(@Path("id") id: Int): Response<ApiResponse>
 
-    @GET("users/{id}")
+    @GET("api/auth/user/{id}")
     suspend fun getUserById(@Path("id") id: Int): Response<User>
 
 
