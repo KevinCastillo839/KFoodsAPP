@@ -78,13 +78,10 @@ dependencies {
     implementation ("com.google.accompanist:accompanist-permissions:0.31.5-beta")
     implementation ("org.osmdroid:osmdroid-android:6.1.16")
     implementation("io.coil-kt:coil-compose:2.5.0")
-// o la última versión estable
-
-
-
-
-
-
     implementation("androidx.compose.material3:material3:1.2.0")
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
-    }
+    implementation("org.osmdroid:osmdroid-android:6.1.14")
+
+
+
+}
