@@ -76,7 +76,6 @@ fun LoginScreen(
 
     val context = LocalContext.current
 
-    // SnackbarHostState
     val snackbarHostState = remember { SnackbarHostState() }
 
     Box(modifier = modifier.fillMaxSize()) {
@@ -208,7 +207,7 @@ fun LoginScreen(
                         authViewModel.login(email, password)
                     }
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -237,6 +236,7 @@ fun LoginScreen(
                 }
             }
 
+
             Spacer(modifier = Modifier.height(16.dp))
 
             TextButton(onClick = {
@@ -252,7 +252,6 @@ fun LoginScreen(
             }
         }
 
-        //   Snackbar
         SnackbarHost(hostState = snackbarHostState)
     }
 }

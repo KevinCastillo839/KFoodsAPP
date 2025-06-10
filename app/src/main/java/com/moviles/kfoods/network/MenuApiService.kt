@@ -7,5 +7,5 @@ import retrofit2.http.Path
 
 interface MenuApiService {
     @GET("api/menu/weekly/user/{userId}")
-    suspend fun getWeeklyMenu(@Path("userId") userId: Int): Response<List<WeeklyMenuResponse>>
+    suspend fun getWeeklyMenu(@Path("userId") userId: Int): Response<WeeklyMenuResponse>
 }

@@ -81,7 +81,7 @@ class PrincipalActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            val userId = intent.getIntExtra("id", 1) // Por defecto 1 en lugar de -1
+            val userId = intent.getIntExtra("id", -1) // Por defecto 1 en lugar de -1
 //Receive the userId as a parameter
             KFoodsTheme {
                 PrincipalScreen(userId = userId)
@@ -464,7 +464,7 @@ fun UserScreen(authViewModel: AuthViewModel, userId: Int) {
 
             Button(
                 onClick = { /* TODO: Acción mis recetas */ },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF388E3C)), // Verde oscuro
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -472,6 +472,7 @@ fun UserScreen(authViewModel: AuthViewModel, userId: Int) {
             ) {
                 Text(text = "Mis Recetas", color = Color.White, fontSize = 16.sp)
             }
+
 
             Spacer(modifier = Modifier.height(16.dp))
 

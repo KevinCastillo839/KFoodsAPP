@@ -43,15 +43,15 @@ class MenuViewModel(private val userId: Int) : ViewModel() {
         _isLoading.value = true
         viewModelScope.launch {
             try {
-                val response: Response<List<WeeklyMenuResponse>> = menuApi.getWeeklyMenu(1)
+                val response: Response<WeeklyMenuResponse> = menuApi.getWeeklyMenu(1)
 
-                Log.d("WeeklyMenus", response.toString())
+                Log.d("WeeklyMenu", response.toString())
 
                 if (response.isSuccessful && response.body() != null) {
-                    _weeklyMenus.value = response.body()
+                    _weeklyMenus.value = listOf(response.body()!!)
                     _errorMessage.value = null
                 } else {
-                    _errorMessage.value = "Error al obtener el menú semanal"
+                    _errorMessage.value = "Error al obtener el menú semanal más reciente"
                 }
             } catch (e: Exception) {
                 _errorMessage.value = "Error: ${e.localizedMessage}"

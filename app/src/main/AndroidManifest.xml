@@ -68,6 +68,12 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".AllergyActivity"
+            android:exported="false"
+            android:label="Alergias"
+            android:theme="@style/Theme.KFoods" />
+
     </application>
 
 </manifest>
