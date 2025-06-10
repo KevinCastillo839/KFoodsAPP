@@ -98,7 +98,7 @@ fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
     var selectedItem by remember { mutableStateOf(2) } // 0: Profile, 1: Book, 2: Home, 3: Cart, 4: Map
 
     val navController = rememberNavController() // // Create NavController
-
+    val context = LocalContext.current // Obtén el Context aquí
 
     Scaffold(
         bottomBar = {
@@ -108,7 +108,13 @@ fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
 
                 when (index) {
                     0 -> navController.navigate("user/$userId") // Navigate to the User screen
-                    1 -> navController.navigate("recipe")
+                    1 -> {
+                        // Redirigir a RecipeActivity
+                        val intent = Intent(context, RecipeActivity::class.java).apply {
+                            putExtra("userId", userId)
+                        }
+                        context.startActivity(intent)
+                    }
                     2 ->navController.navigate("home/$userId")// Navigate to the home screen
                     3 -> navController.navigate("cart")  // Navigate to the cart screen
                     4 -> navController.navigate("map")  // Navigate to the map screen
