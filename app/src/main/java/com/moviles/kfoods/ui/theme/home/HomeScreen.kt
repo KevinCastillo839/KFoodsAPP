@@ -1,7 +1,10 @@
 package com.moviles.kfoods.ui.theme.home
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -43,8 +46,23 @@ import com.moviles.kfoods.R
 import com.moviles.kfoods.common.Constants.IMAGES_BASE_URL
 import com.moviles.kfoods.viewmodel.MenuViewModel
 
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.foundation.Image
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.unit.sp
+
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.Locale
+
+
 @OptIn(ExperimentalPagerApi::class)
 @Composable
+
 fun HomeScreen(menuViewModel: MenuViewModel, userId: Int) {
     val menuList by menuViewModel.weeklyMenus.observeAsState(emptyList())
     val isLoading by menuViewModel.isLoading.observeAsState(false)
@@ -52,7 +70,6 @@ fun HomeScreen(menuViewModel: MenuViewModel, userId: Int) {
 
     val weeklyPagerState = rememberPagerState()
 
-    // Paleta de colores similar a KFoods
     val primaryColor = Color(0xFFFF5722) // Naranja vibrante
     val secondaryColor = Color(0xFFFFE0B2) // Naranja claro pastel
     val backgroundColor = Color.White // Fondo blanco
@@ -60,20 +77,26 @@ fun HomeScreen(menuViewModel: MenuViewModel, userId: Int) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(backgroundColor)
-            .padding(horizontal = 16.dp, vertical = 8.dp) // Menor padding superior
-    ) {
-        // Logo en la esquina superior izquierda, más arriba y más grande
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFFFFCCBC), // Naranja pastel suave
+                        Color(0xFFFFF3E0)  // Fondo más claro todavía
+                    )
+                )
+            )
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+    )
+    {
         Image(
             painter = painterResource(id = R.drawable.logo),
             contentDescription = "Logo de la app",
             modifier = Modifier
-                .size(60.dp) // Aumentado el tamaño
+                .size(60.dp)
                 .align(Alignment.Start)
                 .clip(CircleShape)
         )
         Spacer(modifier = Modifier.height(8.dp))
-
 
         if (isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -105,24 +128,70 @@ fun HomeScreen(menuViewModel: MenuViewModel, userId: Int) {
                 val dailyMenus = weeklyMenuResponse.weekly_menus
                 val dailyPagerState = rememberPagerState()
 
+                // Obtener primer y último día para mostrar rango
+                val firstDay = dailyMenus.firstOrNull()?.day_of_week ?: ""
+                val lastDay = dailyMenus.lastOrNull()?.day_of_week ?: ""
+
                 Card(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(vertical = 8.dp),
                     shape = RoundedCornerShape(20.dp),
                     elevation = CardDefaults.cardElevation(8.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White) // Aquí blanco en vez de secondaryColor
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFFFFE8D8) // Naranja pastel súper suave, más claro que FFCCBC
+
+
+                    )
+
                 ) {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(16.dp)
                     ) {
-                        Text(
-                            text = "Menú creado el: ${weeklyMenuResponse.created_at}",
-                            style = MaterialTheme.typography.titleMedium.copy(color = primaryColor),
-                            modifier = Modifier.padding(bottom = 12.dp)
-                        )
+                        Row(
+                            modifier = Modifier.padding(bottom = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            CreatedDateLabel(
+                                date = weeklyMenuResponse.created_at,
+                                primaryColor = Color(0xFFB71C1C) // rojo oscuro
+                            )
+                        }
+
+                        // Imagen de fondo detrás de fecha y rango de días
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(80.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.image_principal),
+                                contentDescription = "Fondo días",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.matchParentSize()
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .matchParentSize()
+                                    .background(Color(0x80000000)) // negro semi-transparente
+                            )
+
+                            Text(
+                                text = if (firstDay == lastDay) "Día: $firstDay" else "Semana: $firstDay - $lastDay",
+                                style = MaterialTheme.typography.titleLarge.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                ),
+                                modifier = Modifier
+                                    .align(Alignment.CenterStart)
+                                    .padding(start = 16.dp)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
 
                         if (dailyMenus.isNotEmpty()) {
                             HorizontalPager(
@@ -135,26 +204,40 @@ fun HomeScreen(menuViewModel: MenuViewModel, userId: Int) {
                                 Column(
                                     modifier = Modifier.fillMaxSize()
                                 ) {
-                                    Text(
-                                        text = "Día: ${dailyMenu.day_of_week}",
-                                        style = MaterialTheme.typography.titleLarge.copy(
-                                            fontWeight = FontWeight.Bold,
-                                            color = primaryColor
-                                        ),
-                                        modifier = Modifier.padding(bottom = 4.dp)
-                                    )
+                                    // No mostramos el día aquí para evitar repetición
+
                                     Text(
                                         text = dailyMenu.menu.name,
-                                        style = MaterialTheme.typography.titleMedium.copy(color = Color.DarkGray),
-                                        modifier = Modifier.padding(bottom = 8.dp)
+                                        style = MaterialTheme.typography.titleMedium.copy(
+                                            color = Color(0xFF3E2723),
+                                            fontWeight = FontWeight.Bold,
+                                            shadow = Shadow(
+                                                color = Color(0x33000000),
+                                                offset = Offset(1f, 1f),
+                                                blurRadius = 2f
+                                            )
+                                        ),
+                                        modifier = Modifier
+                                            .padding(bottom = 4.dp)
+                                            .background(
+                                                color = Color(0xFFFFCCBC),
+                                                shape = RoundedCornerShape(6.dp)
+                                            )
+                                            .padding(horizontal = 8.dp, vertical = 4.dp)
                                     )
+
                                     Text(
-                                        text = dailyMenu.menu.description,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        maxLines = 3,
-                                        overflow = TextOverflow.Ellipsis,
-                                        modifier = Modifier.padding(bottom = 12.dp)
+                                        text = dailyMenu.menu.description.ifEmpty { "Tu menú balanceado para cada día" },
+                                        style = MaterialTheme.typography.bodySmall.copy(
+                                            color = Color(0xFF6D4C41),
+                                            fontStyle = FontStyle.Italic,
+                                            lineHeight = 16.sp
+                                        ),
+                                        modifier = Modifier.padding(start = 8.dp, bottom = 8.dp)
                                     )
+
+
+
 
                                     Text(
                                         text = "Recetas",
@@ -162,11 +245,11 @@ fun HomeScreen(menuViewModel: MenuViewModel, userId: Int) {
                                             fontWeight = FontWeight.SemiBold,
                                             color = primaryColor
                                         ),
-                                        modifier = Modifier.padding(bottom = 8.dp)
+                                        modifier = Modifier.padding(bottom = 4.dp)
                                     )
 
                                     LazyColumn(
-                                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                                        verticalArrangement = Arrangement.spacedBy(6.dp),
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
                                         items(dailyMenu.menu.recipes) { recipe ->
@@ -214,7 +297,6 @@ fun HomeScreen(menuViewModel: MenuViewModel, userId: Int) {
                                                         }
                                                     }
 
-                                                    // Recuadro naranja abajo a la derecha con el tiempo de preparación
                                                     Box(
                                                         modifier = Modifier
                                                             .align(Alignment.BottomEnd)
@@ -251,6 +333,7 @@ fun HomeScreen(menuViewModel: MenuViewModel, userId: Int) {
         }
     }
 }
+
 @Composable
 fun RemoteImage(imageUrl: String, modifier: Modifier = Modifier) {
     AsyncImage(
@@ -258,19 +341,68 @@ fun RemoteImage(imageUrl: String, modifier: Modifier = Modifier) {
         contentDescription = null,
         modifier = modifier,
         contentScale = ContentScale.Crop,
-
-
-        )
+    )
 }
 
 @Composable
 fun FallbackImage(modifier: Modifier) {
     Box(
         modifier = modifier
-            .background(Color(0xFFFF5722).copy(alpha = 0.2f)) // Naranja claro
+            .background(Color(0xFFFF8A50).copy(alpha = 0.3f)) // Naranja más claro y visible
             .clip(RoundedCornerShape(8.dp)),
         contentAlignment = Alignment.Center
     ) {
         Text("Img", color = Color(0xFFFF5722), fontWeight = FontWeight.Bold)
     }
 }
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+fun CreatedDateLabel(
+    date: String,
+    primaryColor: Color
+) {
+    val inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    val outputFormatter = DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy", Locale("es", "ES"))
+
+    val formattedDate = try {
+        val parsedDate = LocalDateTime.parse(date, inputFormatter)
+        outputFormatter.format(parsedDate)
+    } catch (e: Exception) {
+        date // fallback si hay error
+    }
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .background(
+                color = primaryColor.copy(alpha = 0.1f),
+                shape = RoundedCornerShape(12.dp)
+            )
+            .padding(horizontal = 12.dp, vertical = 6.dp)
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.calendar_month_24px),
+            contentDescription = "Ícono de calendario",
+            modifier = Modifier.size(18.dp),
+            colorFilter = ColorFilter.tint(primaryColor)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = "Menú creado el:",
+            style = MaterialTheme.typography.bodyMedium.copy(
+                color = primaryColor,
+                fontWeight = FontWeight.Medium
+            )
+        )
+        Spacer(modifier = Modifier.width(6.dp))
+        Text(
+            text = formattedDate,
+            style = MaterialTheme.typography.bodyMedium.copy(
+                color = primaryColor,
+                fontWeight = FontWeight.Bold
+            )
+        )
+    }
+}
+
