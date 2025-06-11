@@ -8,6 +8,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.moviles.kfoods.models.Preference
 import com.moviles.kfoods.models.UserAllergy
+import com.moviles.kfoods.models.UserDietaryRestriction
 import com.moviles.kfoods.network.RetrofitInstance
 import kotlinx.coroutines.launch
 import java.io.IOException
