@@ -66,11 +66,18 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.moviles.kfoods.common.Constants.IMAGES_BASE_URL
 import com.moviles.kfoods.models.dto.OverpassElement
+import com.moviles.kfoods.ui.theme.recipe.RecipeDetailsScreen
+import com.moviles.kfoods.ui.theme.recipe.RecipeScreen
+import com.moviles.kfoods.viewmodel.RecipeViewModel
 import com.moviles.kfoods.viewmodel.SupermarketViewModel
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
+
+
+
+
 
 
 class PrincipalActivity : ComponentActivity() {
@@ -108,13 +115,7 @@ fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
 
                 when (index) {
                     0 -> navController.navigate("user/$userId") // Navigate to the User screen
-                    1 -> {
-                        // Redirigir a RecipeActivity
-                        val intent = Intent(context, RecipeActivity::class.java).apply {
-                            putExtra("userId", userId)
-                        }
-                        context.startActivity(intent)
-                    }
+                    1 ->navController.navigate("recipe")
                     2 ->navController.navigate("home/$userId")// Navigate to the home screen
                     3 -> navController.navigate("cart")  // Navigate to the cart screen
                     4 -> navController.navigate("map")  // Navigate to the map screen
@@ -159,8 +160,23 @@ fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
                 }
 
                 composable("recipe") {
-                    RecipeScreen()
+                    val recipeViewModel: RecipeViewModel = viewModel()
+                    RecipeScreen(navController = navController, recipeViewModel = recipeViewModel)
                 }
+                composable(
+                    route = "recipe_details/{id}",
+                    arguments = listOf(navArgument("id") { type = NavType.IntType })
+                ) {
+                    val recipeId = it.arguments?.getInt("id") ?: -1
+                    val recipeViewModel: RecipeViewModel = viewModel()
+                    RecipeDetailsScreen(
+                        recipeId = recipeId,
+                        recipeViewModel = recipeViewModel,
+                        navController = navController
+                    )
+                }
+
+
                 composable("cart") {
                     CartScreen()
                 }
@@ -550,19 +566,8 @@ fun BottomNavigationBar(selectedIndex: Int, onItemSelected: (Int) -> Unit) {
     }
 }
 
+
 @Composable
-fun RecipeScreen() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = "Pantalla de Recetas",
-            style = MaterialTheme.typography.headlineMedium,
-            textAlign = TextAlign.Center
-        )
-    }
-}@Composable
 fun CartScreen() {
     Box(
         modifier = Modifier.fillMaxSize(),
