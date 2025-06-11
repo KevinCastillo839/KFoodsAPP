@@ -53,6 +53,7 @@ import com.moviles.kfoods.models.dto.CreatePreferenceRequestDto
 import com.moviles.kfoods.viewmodel.AllergyViewModel
 import com.moviles.kfoods.viewmodel.UserAllergyViewModel
 import com.moviles.kfoods.viewmodels.PreferenceViewModel
+import kotlinx.coroutines.delay
 
 class PreferenceActivity : ComponentActivity() {
     private val preferenceViewModel: PreferenceViewModel by viewModels()
@@ -353,16 +354,24 @@ fun HandlePreferencesEffects(
 ) {
     LaunchedEffect(preferenceId, isSavingPreferences) {
         if (isSavingPreferences) {
-            if (preferenceId != null) {
-                handleDietaryGoal(preferenceId, dietaryGoal, dietGoal, viewModelP, context)
-                handleDietaryRestrictions(preferenceId, selectedDietaryRestriction, viewModelP)
-                handleUserAllergies(selectedAllergies, userId, viewModelUA)
-                navigateToGenerateMenuActivity(context)
-            } else {
-                Toast.makeText(context, "Error al crear preferencia", Toast.LENGTH_SHORT).show()
+            var attempts = 0
+            while (preferenceId == null && attempts < 100) { // Máximo 100 intentos (~5 segundos)
+                delay(50) // Espera a que preferenceId tenga un valor
+                attempts++
             }
+            if (preferenceId == null) {
+                Log.e("PreferencesScreen", "Error: No se pudo crear preferenceId después de 100 intentos")
+                Toast.makeText(context, "Error al crear la preferencia", Toast.LENGTH_SHORT).show()
+            }
+            Log.d("PreferencesScreen", "Id Creado: $preferenceId")
+            Toast.makeText(context, "Preferencia creada con éxito", Toast.LENGTH_SHORT).show()
+            handleDietaryGoal(preferenceId!!, dietaryGoal, dietGoal, viewModelP, context)
+            handleDietaryRestrictions(preferenceId!!, selectedDietaryRestriction, viewModelP)
+            handleUserAllergies(selectedAllergies, userId, viewModelUA)
+            navigateToGenerateMenuActivity(context)
         }
     }
+
 }
 
 // Funciones auxiliares

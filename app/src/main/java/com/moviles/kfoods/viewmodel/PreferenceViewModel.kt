@@ -129,10 +129,12 @@ class PreferenceViewModel(application: Application) : AndroidViewModel(applicati
 
     fun createPreferences(request: CreatePreferenceRequestDto) {
         viewModelScope.launch {
-            _preferenceId.value = createPreference(request)
+            val id = createPreference(request)
+            if (id != null) {
+                _preferenceId.value = id
+            }
         }
     }
-
 
     suspend fun createPreference(requestP: CreatePreferenceRequestDto): Int? {
         return try {
