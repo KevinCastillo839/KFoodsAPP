@@ -1,10 +1,12 @@
 package com.moviles.kfoods
 
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -28,6 +30,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
 import com.moviles.kfoods.factory.AuthViewModelFactory
+import com.moviles.kfoods.models.dto.RecipeDto
 import com.moviles.kfoods.viewmodel.AuthViewModel
 import com.moviles.kfoods.viewmodel.MenuViewModel
 import com.moviles.kfoods.viewmodel.MenuViewModelFactory
@@ -36,6 +39,7 @@ import com.moviles.kfoods.ui.theme.home.HomeScreen
 import com.moviles.kfoods.ui.theme.map.MapScreen
 import com.moviles.kfoods.ui.theme.user.UserScreen
 import com.moviles.kfoods.ui.theme.recipe.RecipeDetailsScreen
+import com.moviles.kfoods.ui.theme.recipe.RecipeForm
 import com.moviles.kfoods.ui.theme.recipe.RecipeScreen
 import com.moviles.kfoods.viewmodel.RecipeViewModel
 
@@ -44,6 +48,7 @@ class PrincipalActivity : ComponentActivity() {
     private val authViewModel: AuthViewModel by viewModels {
         AuthViewModelFactory(application) // use the factory
     }
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -59,6 +64,7 @@ class PrincipalActivity : ComponentActivity() {
 
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
@@ -96,27 +102,67 @@ fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
                     route = "home/{userId}",
                     arguments = listOf(navArgument("userId") { type = NavType.IntType })
                 ) { backStackEntry ->
-
                     val userId = backStackEntry.arguments?.getInt("userId") ?: -1
-
-
                     val factory = MenuViewModelFactory(userId)
-
                     val menuViewModel: MenuViewModel = viewModel(factory = factory)
 
-                    HomeScreen(menuViewModel = menuViewModel, userId = userId)
+                    HomeScreen(
+                        menuViewModel = menuViewModel,
+                        userId = userId,
+                        onRecipeClick = { recipeId ->
+                            navController.navigate("recipe_details/$recipeId")
+                        }
+                    )
+                }
+
+
+
+
+// Pantalla de usuario
+                composable(
+                    route = "user/{userId}",
+                    arguments = listOf(navArgument("userId") { type = NavType.IntType })
+                ) { backStackEntry ->
+                    val userId = backStackEntry.arguments?.getInt("userId") ?: -1
+                    val recipeViewModel: RecipeViewModel = viewModel()
+                    UserScreen(
+                        authViewModel = authViewModel,
+                        recipeViewModel = recipeViewModel,    // 👈 pásalo aquí
+                        userId = userId,
+                        navController = navController         // 👈 pásalo aquí
+                    )
+                }
+                composable("recipe_form") {
+                    val recipeViewModel: RecipeViewModel = viewModel()
+                    RecipeForm(
+                        recipeViewModel = recipeViewModel,
+                        navController = navController,
+                        userId = userId // pasamos el userId si lo necesitás en el formulario
+                    )
+                }
+                composable("edit_recipe/{recipeId}") { backStackEntry ->
+                    val id = backStackEntry.arguments?.getString("recipeId")?.toIntOrNull()
+                    RecipeForm(
+                        userId = userId,
+                        navController = navController,
+                        recipeId = id
+                    )
                 }
 
 
 
                 composable(
-                    route = "user/{userId}",
-                    arguments = listOf(navArgument("userId") { type = NavType.IntType })  // <-declarate argument type
+                    route = "user_recipes/{userId}",
+                    arguments = listOf(navArgument("userId") { type = NavType.IntType })
                 ) { backStackEntry ->
                     val userId = backStackEntry.arguments?.getInt("userId") ?: -1
 
-                    UserScreen(authViewModel = authViewModel, userId = userId)
+                    RecipeScreen(
+                        navController = navController,
+                        userId = userId
+                    )
                 }
+
 
                 composable("recipe") {
                     val recipeViewModel: RecipeViewModel = viewModel()

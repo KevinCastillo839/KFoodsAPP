@@ -1,5 +1,6 @@
 package com.moviles.kfoods.ui.theme.home
 
+import android.R.attr.shape
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
@@ -48,6 +49,8 @@ import com.moviles.kfoods.viewmodel.MenuViewModel
 
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.material3.CheckboxDefaults.colors
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Shadow
@@ -64,7 +67,7 @@ import java.util.Locale
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 
-fun HomeScreen(menuViewModel: MenuViewModel, userId: Int) {
+fun HomeScreen(menuViewModel: MenuViewModel, userId: Int, onRecipeClick: (Int) -> Unit ) {
     val menuList by menuViewModel.weeklyMenus.observeAsState(emptyList())
     val isLoading by menuViewModel.isLoading.observeAsState(false)
     val errorMessage by menuViewModel.errorMessage.observeAsState()
@@ -257,7 +260,8 @@ fun HomeScreen(menuViewModel: MenuViewModel, userId: Int) {
                                             Card(
                                                 modifier = Modifier
                                                     .fillMaxWidth()
-                                                    .shadow(6.dp, RoundedCornerShape(16.dp)),
+                                                    .shadow(6.dp, RoundedCornerShape(16.dp))
+                                                .clickable { onRecipeClick(recipe.id) },
                                                 shape = RoundedCornerShape(16.dp),
                                                 colors = CardDefaults.cardColors(containerColor = Color.White)
                                             ) {

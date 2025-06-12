@@ -29,15 +29,19 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AllInclusive
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.BreakfastDining
 import androidx.compose.material.icons.filled.Circle
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DinnerDining
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.LunchDining
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -46,11 +50,13 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
@@ -88,15 +94,22 @@ import com.moviles.kfoods.ui.theme.KFoodsTheme
 import com.moviles.kfoods.viewmodel.RecipeViewModel
 
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecipeScreen(
-    navController: NavController? = null,  // Hacemos opcional para cuando se use en RecipeActivity
-    recipeViewModel: RecipeViewModel = viewModel()
+    navController: NavController? = null,
+    recipeViewModel: RecipeViewModel = viewModel(),
+    userId: Int? = null
 ) {
-    LaunchedEffect(Unit) {
-        recipeViewModel.getRecipes()
+    // Estado para manejar la receta que se quiere eliminar
+    val recipeToDelete = remember { mutableStateOf<Int?>(null) }
+
+    LaunchedEffect(userId) {
+        if (userId == null || userId == -1) {
+            recipeViewModel.getRecipes()
+        } else {
+            recipeViewModel.getRecipesByUser(userId)
+        }
     }
 
     val recipes by recipeViewModel.recipes.collectAsState(emptyList())
@@ -136,6 +149,17 @@ fun RecipeScreen(
                     }
                 }
             )
+        },
+        floatingActionButton = {
+            navController?.let {
+                FloatingActionButton(
+                    onClick = { it.navigate("recipe_form") },
+                    containerColor = Color(0xFFFF5722),
+                    contentColor = Color.White
+                ) {
+                    Icon(imageVector = Icons.Default.Add, contentDescription = "Agregar Receta")
+                }
+            }
         }
     ) { paddingValues ->
         Column(
@@ -151,6 +175,7 @@ fun RecipeScreen(
                 selectedIngredient = selectedIngredient,
                 selectedMealType = selectedMealType
             )
+
             if (isLoading) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -159,20 +184,56 @@ fun RecipeScreen(
                     CircularProgressIndicator()
                 }
             } else {
+                val deleteRecipe: (Int) -> Unit = { recipeId ->
+                    // Guardamos la receta a eliminar para mostrar diálogo
+                    recipeToDelete.value = recipeId
+                }
+
                 navController?.let {
                     RecipeList(
                         recipes = filteredRecipes,
-                        navController = it
+                        navController = it,
+                        onDeleteClick = deleteRecipe
                     )
                 } ?: RecipeList(
                     recipes = filteredRecipes,
-                    navController = rememberNavController() // Proporciona uno de respaldo si es necesario
+                    navController = rememberNavController(),
+                    onDeleteClick = deleteRecipe
                 )
             }
+        }
 
+        // Diálogo de confirmación para eliminar receta
+        recipeToDelete.value?.let { idToDelete ->
+            AlertDialog(
+                onDismissRequest = { recipeToDelete.value = null },
+                title = { Text(text = "Confirmar eliminación") },
+                text = { Text("¿Estás seguro que quieres eliminar esta receta?") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        recipeViewModel.deleteRecipe(idToDelete)
+                        // Recargar recetas luego de eliminar
+                        if (userId == null || userId == -1) {
+                            recipeViewModel.getRecipes()
+                        } else {
+                            recipeViewModel.getRecipesByUser(userId)
+                        }
+                        recipeToDelete.value = null
+                    }) {
+                        Text("Sí")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { recipeToDelete.value = null }) {
+                        Text("No")
+                    }
+                }
+            )
         }
     }
 }
+
+
 
 // Función para mostrar barra de búsqueda y filtros
 @Composable
@@ -325,21 +386,40 @@ fun FilterMenu(menuExpanded: MutableState<Boolean>, selectedPrepTime: MutableSta
     }
 }
 
-// Lista de recetas
 @Composable
-fun RecipeList(recipes: List<Recipe>, navController: NavController) {
+fun RecipeList(
+    recipes: List<Recipe>,
+    navController: NavController,
+    onDeleteClick: (Int) -> Unit // 👈 solo el ID
+) {
     LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         items(recipes) { recipe ->
-            RecipeCard(recipe = recipe) {
-                navController.navigate("recipe_details/${recipe.id}")
-            }
+            RecipeCard(
+                recipe = recipe,
+                onClick = {
+                    navController.navigate("recipe_details/${recipe.id}")
+                },
+                onEditClick = {
+                    navController.navigate("edit_recipe/${recipe.id}")
+                },
+                onDeleteClick = {
+                    onDeleteClick(recipe.id) // 👈 pasamos solo el ID
+                }
+            )
         }
     }
 }
 
+
+
 // Card para mostrar una receta
 @Composable
-fun RecipeCard(recipe: Recipe, onClick: () -> Unit) {
+fun RecipeCard(
+    recipe: Recipe,
+    onClick: () -> Unit,
+    onEditClick: () -> Unit,
+    onDeleteClick: () -> Unit  // nuevo callback para eliminar
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -385,9 +465,30 @@ fun RecipeCard(recipe: Recipe, onClick: () -> Unit) {
                     )
                 }
             }
+            IconButton(
+                onClick = onEditClick,
+                modifier = Modifier.size(32.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Editar",
+                    tint = Color(0xFF1976D2)
+                )
+            }
+            IconButton(
+                onClick = onDeleteClick,
+                modifier = Modifier.size(32.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Eliminar",
+                    tint = Color.Red
+                )
+            }
         }
     }
 }
+
 
 // Filtro de recetas
 fun filterRecipes(recipes: List<Recipe>,searchQuery: String,selectedMealType: String,selectedPrepTime: Int,selectedIngredient: String): List<Recipe> {

@@ -67,4 +67,12 @@ object RetrofitInstance {
             .build()
             .create(PreferenceApiService::class.java)
     }
+    val ingredientApi: IngredientApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(API_BASE_URL)
+            .client(client)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(IngredientApiService::class.java)
+    }
 }

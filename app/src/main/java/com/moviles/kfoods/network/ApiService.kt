@@ -37,7 +37,7 @@ interface ApiService {
     @POST("api/auth/reset-password")
     suspend fun resetPassword(@Body request: ResetPasswordRequest): Response<ApiResponse>
 
-    @GET("users/{id}")
+    @GET("api/auth/user/{id}")
     suspend fun getUserById(@Path("id") id: Int): Response<User>
 
     // UserAllergy
