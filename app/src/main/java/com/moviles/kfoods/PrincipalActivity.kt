@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
@@ -34,7 +35,9 @@ import kotlin.getValue
 import com.moviles.kfoods.ui.theme.home.HomeScreen
 import com.moviles.kfoods.ui.theme.map.MapScreen
 import com.moviles.kfoods.ui.theme.user.UserScreen
-
+import com.moviles.kfoods.ui.theme.recipe.RecipeDetailsScreen
+import com.moviles.kfoods.ui.theme.recipe.RecipeScreen
+import com.moviles.kfoods.viewmodel.RecipeViewModel
 
 
 class PrincipalActivity : ComponentActivity() {
@@ -62,7 +65,7 @@ fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
     var selectedItem by remember { mutableStateOf(2) } // 0: Profile, 1: recipe, 2: Home, 3: Cart, 4: Map
 
     val navController = rememberNavController() // // Create NavController
-
+    val context = LocalContext.current // Obtén el Context aquí
 
     Scaffold(
         bottomBar = {
@@ -72,7 +75,7 @@ fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
 
                 when (index) {
                     0 -> navController.navigate("user/$userId") // Navigate to the User screen
-                    1 -> navController.navigate("recipe")
+                    1 ->navController.navigate("recipe")
                     2 ->navController.navigate("home/$userId")// Navigate to the home screen
                     3 -> navController.navigate("cart")  // Navigate to the cart screen
                     4 -> navController.navigate("map")  // Navigate to the map screen
@@ -116,8 +119,23 @@ fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
                 }
 
                 composable("recipe") {
-                    RecipeScreen()
+                    val recipeViewModel: RecipeViewModel = viewModel()
+                    RecipeScreen(navController = navController, recipeViewModel = recipeViewModel)
                 }
+                composable(
+                    route = "recipe_details/{id}",
+                    arguments = listOf(navArgument("id") { type = NavType.IntType })
+                ) {
+                    val recipeId = it.arguments?.getInt("id") ?: -1
+                    val recipeViewModel: RecipeViewModel = viewModel()
+                    RecipeDetailsScreen(
+                        recipeId = recipeId,
+                        recipeViewModel = recipeViewModel,
+                        navController = navController
+                    )
+                }
+
+
                 composable("cart") {
                     CartScreen()
                 }
@@ -168,18 +186,6 @@ fun BottomNavigationBar(selectedIndex: Int, onItemSelected: (Int) -> Unit) {
 
 
 @Composable
-fun RecipeScreen() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = "Pantalla de Recetas",
-            style = MaterialTheme.typography.headlineMedium,
-            textAlign = TextAlign.Center
-        )
-    }
-}@Composable
 fun CartScreen() {
     Box(
         modifier = Modifier.fillMaxSize(),
