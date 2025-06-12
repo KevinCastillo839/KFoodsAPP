@@ -1,7 +1,7 @@
 package com.moviles.kfoods.ui.theme.recipe
 
 import com.moviles.kfoods.R
-import com.moviles.kfoods.RemoteImage
+import com.moviles.kfoods.ui.theme.home.RemoteImage
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
