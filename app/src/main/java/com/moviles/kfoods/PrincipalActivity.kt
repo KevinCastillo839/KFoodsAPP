@@ -163,7 +163,7 @@ fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
                     )
                 }
                 composable("create_ingredient") {
-                    CreateIngredientForm(viewModel = viewModel()) // Usa tu formulario aquí
+                    CreateIngredientForm(navController = navController, viewModel = viewModel()) // Usa tu formulario aquí
                 }
 
 

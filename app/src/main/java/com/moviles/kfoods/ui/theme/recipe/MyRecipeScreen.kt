@@ -9,6 +9,9 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,6 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -37,6 +41,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -59,7 +65,6 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
-
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,10 +72,9 @@ fun RecipeForm(
     userId: Int,
     navController: NavController,
     recipeViewModel: RecipeViewModel = viewModel(),
-    ingredientViewModel: IngredientViewModel = viewModel(), // Parámetro para la receta a editar (null si crear)
-     recipeId: Int? = null
-    ) {
-    // Obtener la receta del ViewModel como StateFlow y observarla
+    ingredientViewModel: IngredientViewModel = viewModel(),
+    recipeId: Int? = null
+) {
     val recipeState by recipeViewModel.recipeDetail.collectAsState()
 
     LaunchedEffect(recipeId) {
@@ -78,32 +82,28 @@ fun RecipeForm(
             recipeViewModel.getRecipesById(recipeId)
         }
     }
-    // Lista de ingredientes disponibles
+
     val ingredientList = ingredientViewModel.ingredientList
     val scrollState = rememberScrollState()
 
-
-    // Estados para el formulario, inicializados con datos existentes si existen
     val recipeName = remember { mutableStateOf(recipeState?.name ?: "") }
     val instructions = remember { mutableStateOf(recipeState?.instructions ?: "") }
     val category = remember { mutableStateOf(recipeState?.category ?: "") }
     val prepTimeText = remember { mutableStateOf(recipeState?.preparation_time?.toString() ?: "") }
 
-    // Dropdown estado
     val ingredientDropdownExpanded = remember { mutableStateOf(false) }
     val categoryDropdownExpanded = remember { mutableStateOf(false) }
     val context = LocalContext.current
     var imageUri by remember { mutableStateOf<Uri?>(null) }
 
-    // Cargar imagen existente si hay (puedes ajustar según cómo guardas url o path)
     val existingImageUrl = recipeState?.image_url
 
-    // Ingredientes seleccionados, inicializados con los actuales si existen
     data class IngredientSelection(
         val ingredient: IngredientDto,
         var quantity: String = "",
         var unit: String = ""
     )
+
     val selectedIngredients = remember(recipeState) {
         mutableStateListOf<IngredientSelection>().apply {
             clear()
@@ -118,12 +118,12 @@ fun RecipeForm(
             }
         }
     }
-    // Open the image picker.
+
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         imageUri = uri
     }
 
-    val categories = listOf("Postre", "Entrada", "Plato fuerte", "Bebida")
+    val categories = listOf("Desayuno", "ALmuerzo", "Cena")
 
     LaunchedEffect(Unit) {
         ingredientViewModel.fetchIngredients()
@@ -133,271 +133,313 @@ fun RecipeForm(
         DateTimeFormatter.ISO_INSTANT.format(Instant.now().atOffset(ZoneOffset.UTC))
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(scrollState)
-    ) {
-        Text(if (recipeState == null) "Crear Receta" else "Editar Receta", style = MaterialTheme.typography.headlineMedium)
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(
-            onClick = {
-                // Aquí puedes navegar a la pantalla para crear ingredientes
-                navController.navigate("create_ingredient")
-            },
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp)
-        ) {
-            Text("Agregar Ingrediente", color = Color.White)
-        }
-
-        OutlinedTextField(
-            value = recipeName.value,
-            onValueChange = { recipeName.value = it },
-            label = { Text("Nombre de la receta") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = instructions.value,
-            onValueChange = { instructions.value = it },
-            label = { Text("Instrucciones") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(120.dp),
-            maxLines = 5
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        ExposedDropdownMenuBox(
-            expanded = categoryDropdownExpanded.value,
-            onExpandedChange = { categoryDropdownExpanded.value = !categoryDropdownExpanded.value }
-        ) {
-            OutlinedTextField(
-                readOnly = true,
-                value = category.value,
-                onValueChange = {},
-                label = { Text("Categoría") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryDropdownExpanded.value) },
-                modifier = Modifier
-                    .menuAnchor()
-                    .fillMaxWidth()
-            )
-            ExposedDropdownMenu(
-                expanded = categoryDropdownExpanded.value,
-                onDismissRequest = { categoryDropdownExpanded.value = false }
-            ) {
-                categories.forEach { cat ->
-                    DropdownMenuItem(
-                        text = { Text(cat) },
-                        onClick = {
-                            category.value = cat
-                            categoryDropdownExpanded.value = false
-                        }
+                .fillMaxSize()
+                .background(
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(
+                            Color(0xFFFFE0B2),
+                            Color(0xFFFFF3E0),
+                            Color(0xFFFFFBF5)
+                        )
                     )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = prepTimeText.value,
-            onValueChange = { newValue ->
-                if (newValue.all { it.isDigit() }) {
-                    prepTimeText.value = newValue
-                }
-            },
-            label = { Text("Tiempo de preparación (minutos)") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Button(
-            onClick = { launcher.launch("image/*") },
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EE)),
-            modifier = Modifier.fillMaxWidth()
+                )
+                .verticalScroll(scrollState)
+                .padding(horizontal = 24.dp, vertical = 16.dp) // Adjusted padding for consistency
         ) {
-            Text("Seleccionar imagen", color = Color.White)
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Mostrar imagen seleccionada o existente
-        if (imageUri != null) {
-            Image(
-                painter = rememberAsyncImagePainter(imageUri),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(100.dp)
-                    .align(Alignment.CenterHorizontally)
+            // Header Section
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                if (recipeState == null) "Crear Receta" else "Editar Receta",
+                style = MaterialTheme.typography.headlineMedium,
+                color = Color(0xFF1E1E1E),
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             )
-        } else if (existingImageUrl != null) {
-            // Aquí podrías cargar la imagen existente usando Coil o similar, por ejemplo:
-            Image(
-                painter = rememberAsyncImagePainter(existingImageUrl),
-                contentDescription = null,
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Form Fields Section
+            Column(
                 modifier = Modifier
-                    .size(100.dp)
-                    .align(Alignment.CenterHorizontally)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text("Agregar Ingredientes")
-
-        ExposedDropdownMenuBox(
-            expanded = ingredientDropdownExpanded.value,
-            onExpandedChange = { ingredientDropdownExpanded.value = !ingredientDropdownExpanded.value }
-        ) {
-            OutlinedTextField(
-                readOnly = true,
-                value = "",
-                onValueChange = {},
-                label = { Text("Seleccionar ingrediente") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = ingredientDropdownExpanded.value) },
-                modifier = Modifier
-                    .menuAnchor()
                     .fillMaxWidth()
-            )
-            ExposedDropdownMenu(
-                expanded = ingredientDropdownExpanded.value,
-                onDismissRequest = { ingredientDropdownExpanded.value = false }
-            ) {
-                ingredientList.forEach { ingredient ->
-                    DropdownMenuItem(
-                        text = { Text(ingredient.name) },
-                        onClick = {
-                            if (selectedIngredients.none { it.ingredient.id == ingredient.id }) {
-                                selectedIngredients.add(IngredientSelection(ingredient))
-                            }
-                            ingredientDropdownExpanded.value = false
-                        }
+                    .shadow(
+                        elevation = 8.dp,
+                        shape = RoundedCornerShape(16.dp), // Similar rounded corners to login fields
+                        clip = true
                     )
+                    .background(Color.White, RoundedCornerShape(16.dp))
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp) // Consistent spacing
+            ) {
+                Button(
+                    onClick = {
+                        navController.navigate("create_ingredient")
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp) // Fixed height for buttons
+                ) {
+                    Text("Agregar Ingrediente", color = Color.White)
                 }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        selectedIngredients.forEachIndexed { index, selection ->
-            Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                Text(selection.ingredient.name, style = MaterialTheme.typography.titleMedium)
 
                 OutlinedTextField(
-                    value = selection.quantity,
-                    onValueChange = { newQty ->
-                        selectedIngredients[index] = selection.copy(quantity = newQty)
-                    },
-                    label = { Text("Cantidad") },
+                    value = recipeName.value,
+                    onValueChange = { recipeName.value = it },
+                    label = { Text("Nombre de la receta") },
+                    shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth()
                 )
 
                 OutlinedTextField(
-                    value = selection.unit,
-                    onValueChange = { newUnit ->
-                        selectedIngredients[index] = selection.copy(unit = newUnit)
+                    value = instructions.value,
+                    onValueChange = { instructions.value = it },
+                    label = { Text("Instrucciones") },
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(120.dp), // Fixed height for instructions
+                    maxLines = 5
+                )
+
+                ExposedDropdownMenuBox(
+                    expanded = categoryDropdownExpanded.value,
+                    onExpandedChange = { categoryDropdownExpanded.value = !categoryDropdownExpanded.value }
+                ) {
+                    OutlinedTextField(
+                        readOnly = true,
+                        value = category.value,
+                        onValueChange = {},
+                        label = { Text("Categoría") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryDropdownExpanded.value) },
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = categoryDropdownExpanded.value,
+                        onDismissRequest = { categoryDropdownExpanded.value = false }
+                    ) {
+                        categories.forEach { cat ->
+                            DropdownMenuItem(
+                                text = { Text(cat) },
+                                onClick = {
+                                    category.value = cat
+                                    categoryDropdownExpanded.value = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+                OutlinedTextField(
+                    value = prepTimeText.value,
+                    onValueChange = { newValue ->
+                        if (newValue.all { it.isDigit() }) {
+                            prepTimeText.value = newValue
+                        }
                     },
-                    label = { Text("Unidad") },
+                    label = { Text("Tiempo de preparación (minutos)") },
+                    shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth()
                 )
-            }
-        }
 
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Button(
-            onClick = {
-                // Validaciones
-                if (recipeName.value.isBlank()) {
-                    Toast.makeText(context, "Ingrese el nombre de la receta", Toast.LENGTH_SHORT).show()
-                    return@Button
-                }
-                if (instructions.value.isBlank()) {
-                    Toast.makeText(context, "Ingrese las instrucciones", Toast.LENGTH_SHORT).show()
-                    return@Button
-                }
-                if (category.value.isBlank()) {
-                    Toast.makeText(context, "Seleccione una categoría", Toast.LENGTH_SHORT).show()
-                    return@Button
-                }
-                if (prepTimeText.value.isBlank()) {
-                    Toast.makeText(context, "Ingrese el tiempo de preparación", Toast.LENGTH_SHORT).show()
-                    return@Button
-                }
-                if (selectedIngredients.isEmpty()) {
-                    Toast.makeText(context, "Agregue al menos un ingrediente", Toast.LENGTH_SHORT).show()
-                    return@Button
+                Button(
+                    onClick = { launcher.launch("image/*") },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EE)),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp) // Fixed height for buttons
+                ) {
+                    Text("Seleccionar imagen", color = Color.White)
                 }
 
-                val now = LocalDateTime.now()
-                val nowIso = now.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
-
-                // Obtener File a partir de imageUri
-                val file = imageUri?.let { uri ->
-                    getFileFromUri(context, uri)
-                }
-
-                // Crear lista de ingredientes DTO
-                val ingredientsList = selectedIngredients.map { sel ->
-                    CreateRecipeIngredientDto(
-                        id = 0,
-                        recipe_id = recipeState?.id ?: 0,
-                        ingredient_id = sel.ingredient.id,
-                        quantity = "${sel.quantity} ${sel.unit}".trim(),
-                        created_at = nowIso,
-                        updated_at = nowIso
+                if (imageUri != null) {
+                    Image(
+                        painter = rememberAsyncImagePainter(imageUri),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(100.dp) // Fixed size for image preview
+                            .align(Alignment.CenterHorizontally)
+                            .shadow(4.dp, RoundedCornerShape(8.dp))
+                    )
+                } else if (existingImageUrl != null) {
+                    Image(
+                        painter = rememberAsyncImagePainter(existingImageUrl),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(100.dp) // Fixed size for image preview
+                            .align(Alignment.CenterHorizontally)
+                            .shadow(4.dp, RoundedCornerShape(8.dp))
                     )
                 }
 
-                val gson = Gson()
-                val ingredientsJsonString = gson.toJson(ingredientsList)
-
-                val request = CreateRecipeRequestDto(
-                    name = recipeName.value.trim(),
-                    instructions = instructions.value.trim(),
-                    image_url = imageUri?.toString() ?: recipeState?.image_url,
-                    category = category.value,
-                    preparation_time = prepTimeText.value.toIntOrNull() ?: 0,
-                    created_at =  nowIso,
-                    updated_at = nowIso,
-                    Recipe_IngredientsJson = ingredientsJsonString,
-                    user_id = userId
+                Text(
+                    "Ingredientes de la receta",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color(0xFF1E1E1E),
+                    modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
                 )
 
-                val currentRecipe = recipeState  // guarda el valor actual
-
-                if (currentRecipe == null) {
-                    Log.i("RecipeForm", "Creando receta: $request")
-                    recipeViewModel.createRecipe(request, file)
-                } else {
-                    Log.i("RecipeForm", "Editando receta ID ${currentRecipe.id}: $request")
-                    recipeViewModel.updateRecipe(currentRecipe.id, request, file)
+                ExposedDropdownMenuBox(
+                    expanded = ingredientDropdownExpanded.value,
+                    onExpandedChange = { ingredientDropdownExpanded.value = !ingredientDropdownExpanded.value }
+                ) {
+                    OutlinedTextField(
+                        readOnly = true,
+                        value = "",
+                        onValueChange = {},
+                        label = { Text("Seleccionar ingrediente") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = ingredientDropdownExpanded.value) },
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = ingredientDropdownExpanded.value,
+                        onDismissRequest = { ingredientDropdownExpanded.value = false }
+                    ) {
+                        ingredientList.forEach { ingredient ->
+                            DropdownMenuItem(
+                                text = { Text(ingredient.name) },
+                                onClick = {
+                                    if (selectedIngredients.none { it.ingredient.id == ingredient.id }) {
+                                        selectedIngredients.add(IngredientSelection(ingredient))
+                                    }
+                                    ingredientDropdownExpanded.value = false
+                                }
+                            )
+                        }
+                    }
                 }
 
+                selectedIngredients.forEachIndexed { index, selection ->
+                    Column(
+                        modifier = Modifier
+                            .padding(vertical = 8.dp)
+                            .fillMaxWidth()
+                            .shadow(2.dp, RoundedCornerShape(8.dp))
+                            .background(Color.White, RoundedCornerShape(8.dp))
+                            .padding(12.dp)
+                    ) {
+                        Text(
+                            selection.ingredient.name,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = Color(0xFF1E1E1E)
+                        )
 
-                navController.popBackStack()
-            },
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        ) {
-            Text(if (recipeState == null) "Crear Receta" else "Guardar Cambios")
+                        OutlinedTextField(
+                            value = selection.quantity,
+                            onValueChange = { newQty ->
+                                selectedIngredients[index] = selection.copy(quantity = newQty)
+                            },
+                            label = { Text("Cantidad") },
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        OutlinedTextField(
+                            value = selection.unit,
+                            onValueChange = { newUnit ->
+                                selectedIngredients[index] = selection.copy(unit = newUnit)
+                            },
+                            label = { Text("Unidad") },
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Button(
+                    onClick = {
+                        if (recipeName.value.isBlank()) {
+                            Toast.makeText(context, "Ingrese el nombre de la receta", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+                        if (instructions.value.isBlank()) {
+                            Toast.makeText(context, "Ingrese las instrucciones", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+                        if (category.value.isBlank()) {
+                            Toast.makeText(context, "Seleccione una categoría", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+                        if (prepTimeText.value.isBlank()) {
+                            Toast.makeText(context, "Ingrese el tiempo de preparación", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+                        if (selectedIngredients.isEmpty()) {
+                            Toast.makeText(context, "Agregue al menos un ingrediente", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+
+                        val now = LocalDateTime.now()
+                        val nowIso = now.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+
+                        val file = imageUri?.let { uri ->
+                            getFileFromUri(context, uri)
+                        }
+
+                        val ingredientsList = selectedIngredients.map { sel ->
+                            CreateRecipeIngredientDto(
+                                id = 0,
+                                recipe_id = recipeState?.id ?: 0,
+                                ingredient_id = sel.ingredient.id,
+                                quantity = "${sel.quantity} ${sel.unit}".trim(),
+                                created_at = nowIso,
+                                updated_at = nowIso
+                            )
+                        }
+
+                        val gson = Gson()
+                        val ingredientsJsonString = gson.toJson(ingredientsList)
+
+                        val request = CreateRecipeRequestDto(
+                            name = recipeName.value.trim(),
+                            instructions = instructions.value.trim(),
+                            image_url = imageUri?.toString() ?: recipeState?.image_url,
+                            category = category.value,
+                            preparation_time = prepTimeText.value.toIntOrNull() ?: 0,
+                            created_at = nowIso,
+                            updated_at = nowIso,
+                            Recipe_IngredientsJson = ingredientsJsonString,
+                            user_id = userId
+                        )
+
+                        val currentRecipe = recipeState
+
+                        if (currentRecipe == null) {
+                            Log.i("RecipeForm", "Creando receta: $request")
+                            recipeViewModel.createRecipe(request, file)
+                        } else {
+                            Log.i("RecipeForm", "Editando receta ID ${currentRecipe.id}: $request")
+                            recipeViewModel.updateRecipe(currentRecipe.id, request, file)
+                        }
+
+                        navController.popBackStack()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .fillMaxWidth()
+                        .height(50.dp) // Fixed height for buttons
+                ) {
+                    Text(if (recipeState == null) "Crear Receta" else "Guardar Cambios", color = Color.White)
+                }
+
+                Spacer(modifier = Modifier.height(48.dp))
+            }
         }
-
-        Spacer(modifier = Modifier.height(48.dp))
     }
 }
-
-
-
-
 @Composable
 fun ImagePicker(
     modifier: Modifier = Modifier,
