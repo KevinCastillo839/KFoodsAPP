@@ -1,11 +1,11 @@
 package com.moviles.kfoods.ui.theme.home
 
-import android.R.attr.shape
 import android.os.Build
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -21,24 +22,34 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
@@ -46,18 +57,6 @@ import com.google.accompanist.pager.rememberPagerState
 import com.moviles.kfoods.R
 import com.moviles.kfoods.common.Constants.IMAGES_BASE_URL
 import com.moviles.kfoods.viewmodel.MenuViewModel
-
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
-import androidx.compose.material3.CheckboxDefaults.colors
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Shadow
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.unit.sp
-
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -77,6 +76,16 @@ fun HomeScreen(menuViewModel: MenuViewModel, userId: Int, onRecipeClick: (Int) -
     val primaryColor = Color(0xFFFF5722) // Naranja vibrante
     val secondaryColor = Color(0xFFFFE0B2) // Naranja claro pastel
     val backgroundColor = Color.White // Fondo blanco
+    val generateResult by menuViewModel.generateMenuResult.observeAsState()
+    val context = LocalContext.current
+    // Mostrar Toast cuando generateMenuResult cambie y no sea null
+    LaunchedEffect(generateResult) {
+        generateResult?.let { (success, message) ->
+            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+            menuViewModel.clearGenerateMenuResult()
+        }
+    }
+
 
     Column(
         modifier = Modifier
@@ -92,14 +101,36 @@ fun HomeScreen(menuViewModel: MenuViewModel, userId: Int, onRecipeClick: (Int) -
             .padding(horizontal = 16.dp, vertical = 8.dp)
     )
     {
-        Image(
-            painter = painterResource(id = R.drawable.logo),
-            contentDescription = "Logo de la app",
+
+        Box(
             modifier = Modifier
-                .size(60.dp)
-                .align(Alignment.Start)
-                .clip(CircleShape)
-        )
+                .fillMaxWidth()
+                .height(80.dp) // altura suficiente para contener ambos
+        ) {
+            // Logo con posición absoluta a 24dp del borde izquierdo
+            Image(
+                painter = painterResource(id = R.drawable.logo),
+                contentDescription = "Logo de la app",
+                modifier = Modifier
+                    .size(60.dp)
+                    .offset(x = 24.dp) // ajusta este valor para moverlo más a la derecha
+                    .align(Alignment.CenterStart)
+                    .clip(CircleShape)
+            )
+
+            // Botón centrado horizontal y verticalmente
+            Button(
+                onClick = { menuViewModel.generateWeeklyMenu() },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),
+                modifier = Modifier.align(Alignment.Center)
+            ) {
+                Text("Generar Menú", color = Color.White)
+            }
+        }
+
+
+
+
         Spacer(modifier = Modifier.height(8.dp))
 
         if (isLoading) {

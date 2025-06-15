@@ -9,8 +9,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,8 +20,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -45,21 +41,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.core.view.DragAndDropPermissionsCompat.request
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import com.google.gson.Gson
-import com.moviles.kfoods.models.Recipe
 import com.moviles.kfoods.models.dto.CreateRecipeIngredientDto
 import com.moviles.kfoods.models.dto.CreateRecipeRequestDto
 import com.moviles.kfoods.models.dto.IngredientDto
-import com.moviles.kfoods.models.dto.RecipeDto
 import com.moviles.kfoods.viewmodel.IngredientViewModel
 import com.moviles.kfoods.viewmodel.RecipeViewModel
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -67,7 +58,6 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
-import java.util.Date
 
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -151,6 +141,18 @@ fun RecipeForm(
     ) {
         Text(if (recipeState == null) "Crear Receta" else "Editar Receta", style = MaterialTheme.typography.headlineMedium)
         Spacer(modifier = Modifier.height(16.dp))
+        Button(
+            onClick = {
+                // Aquí puedes navegar a la pantalla para crear ingredientes
+                navController.navigate("create_ingredient")
+            },
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp)
+        ) {
+            Text("Agregar Ingrediente", color = Color.White)
+        }
 
         OutlinedTextField(
             value = recipeName.value,

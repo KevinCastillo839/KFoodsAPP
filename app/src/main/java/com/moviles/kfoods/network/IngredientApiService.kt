@@ -14,7 +14,7 @@ interface IngredientApiService {
     @GET("ingredient/{id}")
     suspend fun getIngredientById(@Path("id") id: Int): Response<IngredientDto>
 
-    @POST("ingredient")
+    @POST("api/ingredient")
     suspend fun createIngredient(
         @Body createDto: CreateIngredientRequestDto
     ): Response<IngredientDto>
