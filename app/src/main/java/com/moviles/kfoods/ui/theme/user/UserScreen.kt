@@ -34,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.moviles.kfoods.MainActivity
+import com.moviles.kfoods.PreferenceActivity
 import com.moviles.kfoods.R
 import com.moviles.kfoods.viewmodel.AuthViewModel
 
@@ -111,7 +112,13 @@ fun UserScreen(authViewModel: AuthViewModel, userId: Int) {
 
             // Botones existentes
             Button(
-                onClick = { /* TODO: Acción editar preferencias */ },
+                onClick = {
+                    val intent = Intent(context, PreferenceActivity::class.java).apply {
+                        putExtra("id", userId) // Pass userId of existing user
+                        putExtra("IS_NEW_USER", false) // Indicate that you are not a new user
+                    }
+                    context.startActivity(intent)
+                },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier
