@@ -33,13 +33,19 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.moviles.kfoods.MainActivity
 import com.moviles.kfoods.PreferenceActivity
 import com.moviles.kfoods.R
 import com.moviles.kfoods.viewmodel.AuthViewModel
+import com.moviles.kfoods.viewmodel.RecipeViewModel
 
 @Composable
-fun UserScreen(authViewModel: AuthViewModel, userId: Int) {
+fun UserScreen( authViewModel: AuthViewModel,
+                recipeViewModel: RecipeViewModel, // ← agrega esto
+                userId: Int,
+                navController: NavController  ) {
     val context = LocalContext.current
     LaunchedEffect(userId) {
         authViewModel.getUserById(userId)
@@ -131,8 +137,10 @@ fun UserScreen(authViewModel: AuthViewModel, userId: Int) {
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                onClick = { /* TODO: Acción mis recetas */ },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF388E3C)), // Verde oscuro
+                onClick = {
+                    navController.navigate("user_recipes/$userId")
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF388E3C)),
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -140,6 +148,7 @@ fun UserScreen(authViewModel: AuthViewModel, userId: Int) {
             ) {
                 Text(text = "Mis Recetas", color = Color.White, fontSize = 16.sp)
             }
+
 
 
             Spacer(modifier = Modifier.height(16.dp))

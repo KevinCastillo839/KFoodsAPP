@@ -8,7 +8,9 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Book
@@ -16,29 +18,43 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
-import androidx.navigation.compose.*
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.moviles.kfoods.factory.AuthViewModelFactory
+import com.moviles.kfoods.ui.theme.home.HomeScreen
+import com.moviles.kfoods.ui.theme.ingredient.CreateIngredientForm
+import com.moviles.kfoods.ui.theme.map.MapScreen
+import com.moviles.kfoods.ui.theme.recipe.RecipeDetailsScreen
+import com.moviles.kfoods.ui.theme.recipe.RecipeForm
+import com.moviles.kfoods.ui.theme.recipe.RecipeScreen
+import com.moviles.kfoods.ui.theme.user.UserScreen
 import com.moviles.kfoods.viewmodel.AuthViewModel
 import com.moviles.kfoods.viewmodel.MenuViewModel
 import com.moviles.kfoods.viewmodel.MenuViewModelFactory
-import kotlin.getValue
-import com.moviles.kfoods.ui.theme.home.HomeScreen
-import com.moviles.kfoods.ui.theme.map.MapScreen
-import com.moviles.kfoods.ui.theme.user.UserScreen
-import com.moviles.kfoods.ui.theme.recipe.RecipeDetailsScreen
-import com.moviles.kfoods.ui.theme.recipe.RecipeScreen
 import com.moviles.kfoods.viewmodel.RecipeViewModel
 
 
@@ -100,27 +116,71 @@ fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
                     route = "home/{userId}",
                     arguments = listOf(navArgument("userId") { type = NavType.IntType })
                 ) { backStackEntry ->
-
                     val userId = backStackEntry.arguments?.getInt("userId") ?: -1
-
-
                     val factory = MenuViewModelFactory(userId)
-
                     val menuViewModel: MenuViewModel = viewModel(factory = factory)
 
-                    HomeScreen(menuViewModel = menuViewModel, userId = userId)
+                    HomeScreen(
+                        menuViewModel = menuViewModel,
+                        userId = userId,
+                        onRecipeClick = { recipeId ->
+                            navController.navigate("recipe_details/$recipeId")
+                        }
+                    )
                 }
+
+
+
+
+// Pantalla de usuario
+                composable(
+                    route = "user/{userId}",
+                    arguments = listOf(navArgument("userId") { type = NavType.IntType })
+                ) { backStackEntry ->
+                    val userId = backStackEntry.arguments?.getInt("userId") ?: -1
+                    val recipeViewModel: RecipeViewModel = viewModel()
+                    UserScreen(
+                        authViewModel = authViewModel,
+                        recipeViewModel = recipeViewModel,    // 👈 pásalo aquí
+                        userId = userId,
+                        navController = navController         // 👈 pásalo aquí
+                    )
+                }
+                composable("recipe_form") {
+                    val recipeViewModel: RecipeViewModel = viewModel()
+                    RecipeForm(
+                        recipeViewModel = recipeViewModel,
+                        navController = navController,
+                        userId = userId // pasamos el userId si lo necesitás en el formulario
+                    )
+                }
+                composable("edit_recipe/{recipeId}") { backStackEntry ->
+                    val id = backStackEntry.arguments?.getString("recipeId")?.toIntOrNull()
+                    RecipeForm(
+                        userId = userId,
+                        navController = navController,
+                        recipeId = id
+                    )
+                }
+                composable("create_ingredient") {
+                    CreateIngredientForm(navController = navController, viewModel = viewModel()) // Usa tu formulario aquí
+                }
+
 
 
 
                 composable(
-                    route = "user/{userId}",
-                    arguments = listOf(navArgument("userId") { type = NavType.IntType })  // <-declarate argument type
+                    route = "user_recipes/{userId}",
+                    arguments = listOf(navArgument("userId") { type = NavType.IntType })
                 ) { backStackEntry ->
                     val userId = backStackEntry.arguments?.getInt("userId") ?: -1
 
-                    UserScreen(authViewModel = authViewModel, userId = userId)
+                    RecipeScreen(
+                        navController = navController,
+                        userId = userId
+                    )
                 }
+
 
                 composable("recipe") {
                     val recipeViewModel: RecipeViewModel = viewModel()
