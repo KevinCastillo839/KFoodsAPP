@@ -1,10 +1,12 @@
 package com.moviles.kfoods.network
 
+import com.moviles.kfoods.models.Allergy
 import com.moviles.kfoods.models.DietaryGoal
 import com.moviles.kfoods.models.DietaryRestriction
 import com.moviles.kfoods.models.Preference
 import com.moviles.kfoods.models.UserDietaryGoal
 import com.moviles.kfoods.models.UserDietaryRestriction
+import com.moviles.kfoods.models.UserPreference
 import com.moviles.kfoods.models.dto.ApiResponse
 import com.moviles.kfoods.models.dto.CreatePreferenceRequestDto
 import retrofit2.Response
@@ -40,6 +42,9 @@ interface PreferenceApiService {
     @GET("api/dietary_goal")
     suspend fun getDietaryGoal(): Response<List<DietaryGoal>>
 
+    @GET("api/dietary_goal/{userId}")
+    suspend fun getUserPreferences(@Path("userId") id: Int): Response<UserPreference>
+
 //    @POST("api/dietary_restriction")
 //    suspend fun createDietaryRestriction(@Body request: UserDietaryRestriction): Response<UserDietaryRestriction>
 //
@@ -47,6 +52,12 @@ interface PreferenceApiService {
 //    suspend fun createDietaryGoal(@Body request: UserDietaryGoal): Response<UserDietaryGoal>
     @POST("api/dietary_restriction")
     suspend fun createDietaryRestriction(@Body request: UserDietaryRestriction): Response<ApiResponse>
+
+    @PUT("api/dietary_restriction")
+    suspend fun updateDietaryRestriction(@Body request: UserDietaryRestriction): Response<UserDietaryRestriction>
+
+    @PUT("api/dietary_goal")
+    suspend fun updateDietaryGoal(@Body request: UserDietaryGoal): Response<UserDietaryGoal>
 
     @POST("api/dietary_goal")
     suspend fun createDietaryGoal(@Body request: UserDietaryGoal): Response<ApiResponse>

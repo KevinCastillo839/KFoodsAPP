@@ -44,6 +44,12 @@ interface ApiService {
     @POST("api/user_allergy")
     suspend fun createUserAllergy(@Body request: UserAllergy): Response<Preference>
 
+    @PUT("api/user_allergy/{userId}")
+    suspend fun updateUserAllergy(@Path("userId") id: Int, @Body userAllergy: UserAllergy): Response<UserAllergy>
+
+    @GET("api/user_allergy/{userId}")
+    suspend fun getAllergiesByUserId(@Path("userId") id: Int): Response<List<UserAllergy>>
+
     @GET("api/allergy")
     suspend fun getAllergies(): Response<List<Allergy>>
 

@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.moviles.kfoods.MainActivity
+import com.moviles.kfoods.PreferenceActivity
 import com.moviles.kfoods.R
 import com.moviles.kfoods.viewmodel.AuthViewModel
 import com.moviles.kfoods.viewmodel.RecipeViewModel
@@ -117,7 +118,13 @@ fun UserScreen( authViewModel: AuthViewModel,
 
             // Botones existentes
             Button(
-                onClick = { /* TODO: Acción editar preferencias */ },
+                onClick = {
+                    val intent = Intent(context, PreferenceActivity::class.java).apply {
+                        putExtra("id", userId) // Pass userId of existing user
+                        putExtra("IS_NEW_USER", false) // Indicate that you are not a new user
+                    }
+                    context.startActivity(intent)
+                },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier
