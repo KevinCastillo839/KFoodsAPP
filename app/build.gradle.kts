@@ -81,6 +81,7 @@ dependencies {
     implementation("androidx.compose.material3:material3:1.2.0")
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
     implementation("org.osmdroid:osmdroid-android:6.1.14")
+    implementation ("androidx.compose.runtime:runtime-livedata:1.7.4") // Ajusta la versión según tu proyecto
 
 
 
