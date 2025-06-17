@@ -43,30 +43,6 @@ class PreferenceViewModel(application: Application) : AndroidViewModel(applicati
     private val _preferenceId = MutableStateFlow<Int?>(null)
     val preferenceId: StateFlow<Int?> get() = _preferenceId
 
-    fun getAllPreferences() {
-        viewModelScope.launch {
-            isLoading.value = true
-            try {
-                val response = RetrofitInstance.preferenceApi.getPreferences()
-                if (response.isSuccessful) {
-                    preferences.value = response.body()
-                    Log.d("PreferenceViewModel", "Preferencias obtenidas: ${response.body()}")
-                } else {
-                    val errorBody = response.errorBody()?.string()
-                    Log.e("PreferenceViewModel", "Error al obtener preferencias: $errorBody")
-                    errorMessage.value = "Error al obtener preferencias: $errorBody"
-                }
-            } catch (e: IOException) {
-                errorMessage.value = "Error de red: ${e.message}"
-                Log.e("PreferenceViewModel", "Error de red: ${e.message}")
-            } catch (e: Exception) {
-                errorMessage.value = "Error inesperado: ${e.message}"
-                Log.e("PreferenceViewModel", "Error inesperado: ${e.message}")
-            } finally {
-                isLoading.value = false
-            }
-        }
-    }
     fun fetchUserPreferences(userId: Int) {
         viewModelScope.launch {
             isLoading.value = true
@@ -85,6 +61,7 @@ class PreferenceViewModel(application: Application) : AndroidViewModel(applicati
             }
         }
     }
+
     fun getAllDietaryGoal() {
         viewModelScope.launch {
             isLoading.value = true
@@ -118,35 +95,6 @@ class PreferenceViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
-    fun getPreferenceById(userId: Int) {
-        if (userId <= 0) {
-            errorMessage.value = "El ID proporcionado no es válido"
-            return
-        }
-
-        viewModelScope.launch {
-            isLoading.value = true
-            try {
-                val response = RetrofitInstance.preferenceApi.getPreferenceById(userId)
-                if (response.isSuccessful) {
-                    selectedPreference.value = response.body()
-                    Log.d("PreferenceViewModel", "Preferencia obtenida: ${response.body()}")
-                } else {
-                    val errorBody = response.errorBody()?.string()
-                    Log.e("PreferenceViewModel", "Error al obtener preferencia: $errorBody")
-                    errorMessage.value = "Error al obtener preferencia: $errorBody"
-                }
-            } catch (e: IOException) {
-                errorMessage.value = "Error de red: ${e.message}"
-                Log.e("PreferenceViewModel", "Error de red: ${e.message}")
-            } catch (e: Exception) {
-                errorMessage.value = "Error inesperado: ${e.message}"
-                Log.e("PreferenceViewModel", "Error inesperado: ${e.message}")
-            } finally {
-                isLoading.value = false
-            }
-        }
-    }
 
     fun createPreferences(request: CreatePreferenceRequestDto) {
         viewModelScope.launch {
@@ -181,6 +129,7 @@ class PreferenceViewModel(application: Application) : AndroidViewModel(applicati
             null
         }
     }
+
     fun updateDietaryGoal(dietaryGoal: UserDietaryGoal) {
         viewModelScope.launch {
             try {
@@ -197,7 +146,6 @@ class PreferenceViewModel(application: Application) : AndroidViewModel(applicati
             }
         }
     }
-
     fun updateDietaryRestriction(dietaryRestriction: UserDietaryRestriction) {
         viewModelScope.launch {
             try {
@@ -266,60 +214,4 @@ class PreferenceViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
-    fun updatePreference(id: Int, request: Preference) {
-        viewModelScope.launch {
-            isLoading.value = true
-            try {
-                val response = RetrofitInstance.preferenceApi.updatePreference(id, request)
-                if (response.isSuccessful) {
-                    successMessage.value = "Preferencia actualizada con éxito"
-                    Log.d("PreferenceViewModel", "Preferencia actualizada: ${response.body()}")
-                    getAllPreferences()
-                } else {
-                    val errorBody = response.errorBody()?.string()
-                    Log.e("PreferenceViewModel", "Error al actualizar preferencia: $errorBody")
-                    errorMessage.value = "Error al actualizar preferencia: $errorBody"
-                }
-            } catch (e: IOException) {
-                errorMessage.value = "Error de red: ${e.message}"
-                Log.e("PreferenceViewModel", "Error de red: ${e.message}")
-            } catch (e: Exception) {
-                errorMessage.value = "Error inesperado: ${e.message}"
-                Log.e("PreferenceViewModel", "Error inesperado: ${e.message}")
-            } finally {
-                isLoading.value = false
-            }
-        }
-    }
-
-    fun deletePreference(id: Int) {
-        if (id <= 0) {
-            errorMessage.value = "El ID proporcionado no es válido"
-            return
-        }
-
-        viewModelScope.launch {
-            isLoading.value = true
-            try {
-                val response = RetrofitInstance.preferenceApi.deletePreference(id)
-                if (response.isSuccessful) {
-                    successMessage.value = "Preferencia eliminada con éxito"
-                    Log.d("PreferenceViewModel", "Preferencia eliminada: $id")
-                    getAllPreferences()
-                } else {
-                    val errorBody = response.errorBody()?.string()
-                    Log.e("PreferenceViewModel", "Error al eliminar preferencia: $errorBody")
-                    errorMessage.value = "Error al eliminar preferencia: $errorBody"
-                }
-            } catch (e: IOException) {
-                errorMessage.value = "Error de red: ${e.message}"
-                Log.e("PreferenceViewModel", "Error de red: ${e.message}")
-            } catch (e: Exception) {
-                errorMessage.value = "Error inesperado: ${e.message}"
-                Log.e("PreferenceViewModel", "Error inesperado: ${e.message}")
-            } finally {
-                isLoading.value = false
-            }
-        }
-    }
 }

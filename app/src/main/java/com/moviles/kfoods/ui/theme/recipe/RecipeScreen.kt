@@ -101,7 +101,7 @@ fun RecipeScreen(
     recipeViewModel: RecipeViewModel = viewModel(),
     userId: Int? = null
 ) {
-    // Estado para manejar la receta que se quiere eliminar
+    // State to manage the prescription to be deleted
     val recipeToDelete = remember { mutableStateOf<Int?>(null) }
 
     LaunchedEffect(userId) {
@@ -185,7 +185,7 @@ fun RecipeScreen(
                 }
             } else {
                 val deleteRecipe: (Int) -> Unit = { recipeId ->
-                    // Guardamos la receta a eliminar para mostrar diálogo
+                    // We save the recipe to delete to show dialog
                     recipeToDelete.value = recipeId
                 }
 
@@ -203,7 +203,7 @@ fun RecipeScreen(
             }
         }
 
-        // Diálogo de confirmación para eliminar receta
+        // Confirmation dialog to delete recipe
         recipeToDelete.value?.let { idToDelete ->
             AlertDialog(
                 onDismissRequest = { recipeToDelete.value = null },
@@ -212,7 +212,7 @@ fun RecipeScreen(
                 confirmButton = {
                     TextButton(onClick = {
                         recipeViewModel.deleteRecipe(idToDelete)
-                        // Recargar recetas luego de eliminar
+                        // Reload prescriptions after deleting
                         if (userId == null || userId == -1) {
                             recipeViewModel.getRecipes()
                         } else {
@@ -235,7 +235,7 @@ fun RecipeScreen(
 
 
 
-// Función para mostrar barra de búsqueda y filtros
+// Function to display search bar and filters
 @Composable
 fun SearchAndFilterBar(searchQuery: MutableState<String>, menuExpanded: MutableState<Boolean>, selectedPrepTime: MutableState<Int>,
                        selectedIngredient: MutableState<String>, selectedMealType: MutableState<String>) {
@@ -280,7 +280,7 @@ fun SearchAndFilterBar(searchQuery: MutableState<String>, menuExpanded: MutableS
     }
 }
 
-// Filtro de tipos de comida
+// Food type filter
 @Composable
 fun MealTypeFilter(
     selectedMealType: MutableState<String>,
@@ -327,7 +327,7 @@ fun MealTypeFilter(
 }
 
 
-// Menú desplegable de filtros
+// Filter dropdown menu
 @Composable
 fun FilterMenu(menuExpanded: MutableState<Boolean>, selectedPrepTime: MutableState<Int>, selectedIngredient: MutableState<String>) {
     val primaryColor = Color(0xFFFF5722)
@@ -412,13 +412,13 @@ fun RecipeList(
 
 
 
-// Card para mostrar una receta
+// Card to display a recipe
 @Composable
 fun RecipeCard(
     recipe: Recipe,
     onClick: () -> Unit,
     onEditClick: () -> Unit,
-    onDeleteClick: () -> Unit  // nuevo callback para eliminar
+    onDeleteClick: () -> Unit  // new callback to delete
 ) {
     Card(
         modifier = Modifier
@@ -490,7 +490,7 @@ fun RecipeCard(
 }
 
 
-// Filtro de recetas
+// Recipe filter
 fun filterRecipes(recipes: List<Recipe>,searchQuery: String,selectedMealType: String,selectedPrepTime: Int,selectedIngredient: String): List<Recipe> {
     return recipes.filter { recipe ->
         val ingredients = recipe.recipe_ingredients?.map { it.ingredient.name } ?: emptyList()
@@ -579,18 +579,18 @@ fun RecipeDetailsScreen(recipeId: Int?, recipeViewModel: RecipeViewModel, navCon
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
-            // Imagen y título
+            // Image and title
             RecipeHeader(recipe!!)
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Ingredientes
+            // Ingredients
             SectionHeader(title = "Ingredientes")
             IngredientList(recipe!!.recipe_ingredients ?: emptyList())
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Preparación
+            // Preparation
             SectionHeader(title = "Preparación")
             PreparationSteps(recipe!!.instructions.split("\n"))
         }
