@@ -67,7 +67,7 @@ class PrincipalActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            val userId = intent.getIntExtra("id", -1) // Por defecto 1 en lugar de -1
+            val userId = intent.getIntExtra("id", -1)
 //Receive the userId as a parameter
             KFoodsTheme {
                 PrincipalScreen(userId = userId)
@@ -85,7 +85,7 @@ fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
     var selectedItem by remember { mutableStateOf(2) } // 0: Profile, 1: recipe, 2: Home, 3: Cart, 4: Map
 
     val navController = rememberNavController() // // Create NavController
-    val context = LocalContext.current // Obtén el Context aquí
+    val context = LocalContext.current // Obtain the context
 
     Scaffold(
         bottomBar = {
@@ -163,7 +163,7 @@ fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
                     )
                 }
                 composable("create_ingredient") {
-                    CreateIngredientForm(navController = navController, viewModel = viewModel()) // Usa tu formulario aquí
+                    CreateIngredientForm(navController = navController, viewModel = viewModel()) // use the form
                 }
 
 
@@ -216,10 +216,10 @@ fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
 @Composable
 fun BottomNavigationBar(selectedIndex: Int, onItemSelected: (Int) -> Unit) {
     NavigationBar(
-        containerColor = Color(0xFFFF5722), // Fondo naranja
+        containerColor = Color(0xFFFF5722), // orange background
         tonalElevation = 8.dp,
         modifier = Modifier.background(
-            color = Color(0xFFFF5722), // Fondo naranja
+            color = Color(0xFFFF5722), // orange background
             shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
         )
     ) {
