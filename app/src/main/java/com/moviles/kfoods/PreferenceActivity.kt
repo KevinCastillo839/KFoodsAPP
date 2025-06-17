@@ -50,11 +50,13 @@ import com.moviles.kfoods.models.UserAllergy
 import com.moviles.kfoods.models.UserDietaryGoal
 import com.moviles.kfoods.models.UserDietaryRestriction
 import com.moviles.kfoods.models.dto.CreatePreferenceRequestDto
-import com.moviles.kfoods.ui.theme.user.UserScreen
 import com.moviles.kfoods.viewmodel.AllergyViewModel
 import com.moviles.kfoods.viewmodel.UserAllergyViewModel
 import com.moviles.kfoods.viewmodels.PreferenceViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class PreferenceActivity : ComponentActivity() {
     private val preferenceViewModel: PreferenceViewModel by viewModels()
@@ -93,6 +95,9 @@ fun PreferencesScreen(userId: Int, isNewUser: Boolean, viewModelA: AllergyViewMo
     var preferenceIdState by remember { mutableStateOf<Int?>(null) }
     var dietGoal by remember { mutableStateOf("") }
     val context = LocalContext.current
+    var showCreatePreferenceDialog by remember { mutableStateOf(false) }
+    var hasCreatedPreference by remember { mutableStateOf(false) }
+    var isProcessing by remember { mutableStateOf(false) }
 
     if (!isNewUser) {
         Log.d("PreferencesScreen", "Editar preferencias para el usuario: $userId")
@@ -117,6 +122,12 @@ fun PreferencesScreen(userId: Int, isNewUser: Boolean, viewModelA: AllergyViewMo
                     }
                 }
             }
+        }
+    }
+    // Mostrar cuadro de diálogo al iniciar la pantalla
+    LaunchedEffect(preferenceIdState, isNewUser) {
+        if (!isNewUser && preferenceIdState == 0 && !hasCreatedPreference) {
+            showCreatePreferenceDialog = true
         }
     }
     LaunchedEffect(Unit) {
@@ -181,7 +192,10 @@ fun PreferencesScreen(userId: Int, isNewUser: Boolean, viewModelA: AllergyViewMo
                     userId = userId,
                     isNewUser=isNewUser,
                     viewModelP = viewModelP,
-                    onSaveClicked = { isSavingPreferences = true }
+                    dietGoal=dietGoal,
+                    dietaryGoal=dietaryGoal,
+                    onSaveClicked = { isSavingPreferences = true },
+                    context=context
                 )
 
                 if (isNewUser || preferenceIdState != null) {
@@ -202,6 +216,66 @@ fun PreferencesScreen(userId: Int, isNewUser: Boolean, viewModelA: AllergyViewMo
                 } else {
                     Log.e("PreferencesScreen", "Error: preferenceIdState es nulo y no es un nuevo usuario.")
                 }
+            }
+            // Dialog that appears if the user failed to create the preference in the registry
+            if (showCreatePreferenceDialog) {
+                AlertDialog(
+                    onDismissRequest = { if (!isProcessing) showCreatePreferenceDialog = false },
+                    title = { Text("Crear Preferencia") },
+                    text = { Text("No tiene preferencias creadas. ¿Desea crear una nueva preferencia?") },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                isProcessing = true
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    try {
+                                        val preference = CreatePreferenceRequestDto(user_id = userId)
+                                        viewModelP.createPreferences(preference)
+                                        hasCreatedPreference = true // Check that a preference has already been created
+
+                                        // Keep the dialogue open for 5 seconds
+                                        delay(5000)
+                                        viewModelP.fetchUserPreferences(userId)
+                                        viewModelUA.fetchUserAllergy(userId)
+                                        Toast.makeText(context, "Preferencia creada exitosamente", Toast.LENGTH_SHORT).show()
+                                    } catch (e: Exception) {
+                                        Toast.makeText(
+                                            context,
+                                            "Error al crear preferencias: ${e.message}",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    } finally {
+                                        // Close the dialog after 5 seconds or if an error occurs
+                                        showCreatePreferenceDialog = false
+                                        isProcessing = false
+                                    }
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),
+                            enabled = !isProcessing // Disable button during processing
+                        ) {
+                            Text("Aceptar")
+                        }
+                    },
+                    dismissButton = {
+                        Button(
+                            onClick = {
+                                if (!isProcessing) {
+                                    showCreatePreferenceDialog = false
+                                    val intent = Intent(context, PrincipalActivity::class.java).apply {
+                                        putExtra("id", userId) // Pass userId of existing user
+                                        putExtra("IS_NEW_USER", false) // Indicate that you are not a new user
+                                    }
+                                    context.startActivity(intent)
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),
+                            enabled = !isProcessing // Disable button during processing
+                        ) {
+                            Text("Cancelar")
+                        }
+                    }
+                )
             }
         }
     }
@@ -344,9 +418,21 @@ fun AddAllergyButton(userId: Int, context: Context) {
     }
 }
 @Composable
-fun SavePreferencesButton(userId: Int,isNewUser: Boolean, viewModelP: PreferenceViewModel, onSaveClicked: () -> Unit) {
+fun SavePreferencesButton(userId: Int,isNewUser: Boolean,viewModelP: PreferenceViewModel,
+    dietGoal: String,
+    dietaryGoal: List<DietaryGoal>,
+    onSaveClicked: () -> Unit,
+    context: Context
+) {
+    val isDietGoalValid = dietaryGoal.any { it.goal == dietGoal }
+
     Button(
         onClick = {
+            if (!isDietGoalValid) {
+                Toast.makeText(context, "Seleccione un objetivo de dieta válido.", Toast.LENGTH_SHORT).show()
+                return@Button
+            }
+
             if (isNewUser) {
                 val preference = CreatePreferenceRequestDto(user_id = userId)
                 viewModelP.createPreferences(preference)
@@ -354,11 +440,12 @@ fun SavePreferencesButton(userId: Int,isNewUser: Boolean, viewModelP: Preference
             }
             onSaveClicked()
         },
-        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),
+        colors = ButtonDefaults.buttonColors(containerColor = if (isDietGoalValid) Color(0xFFFF5722) else Color.Gray),
         shape = RoundedCornerShape(12.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .height(50.dp)
+            .height(50.dp),
+        enabled = isDietGoalValid // Disable the button if no valid target is selected
     ) {
         Text(
             text = "Enviar",
@@ -368,6 +455,7 @@ fun SavePreferencesButton(userId: Int,isNewUser: Boolean, viewModelP: Preference
         )
     }
 }
+
 
 @Composable
 fun HandlePreferencesEffects(preferenceIdState: Int, isNewUser: Boolean, preferenceId: Int?,
