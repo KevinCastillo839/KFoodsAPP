@@ -51,5 +51,28 @@ object RetrofitInstance {
             .build()
             .create(MenuApiService::class.java)
     }
-
+    val recipeApi: RecipeApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(API_BASE_URL)
+            .client(client)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(RecipeApiService::class.java)
+    }
+    val preferenceApi: PreferenceApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(API_BASE_URL)
+            .client(client)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(PreferenceApiService::class.java)
+    }
+    val ingredientApi: IngredientApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(API_BASE_URL)
+            .client(client)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(IngredientApiService::class.java)
+    }
 }

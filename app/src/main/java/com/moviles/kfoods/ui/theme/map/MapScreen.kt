@@ -22,7 +22,6 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
-import kotlin.collections.forEach
 
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -112,7 +111,7 @@ fun OSMapView(
                 val mapController = controller
                 mapController.setZoom(15.0)
 
-                // Punto para centrar mapa
+                // Point to center the map
                 val startPoint = when {
                     currentLocation != null -> GeoPoint(currentLocation.first, currentLocation.second)
                     supermarkets.isNotEmpty() -> GeoPoint(supermarkets.first().lat, supermarkets.first().lon)
@@ -120,7 +119,7 @@ fun OSMapView(
                 }
                 mapController.setCenter(startPoint)
 
-                // Marcadores supermercados
+                // supermarkets marks
                 supermarkets.forEach { market ->
                     val marker = Marker(this)
                     marker.position = GeoPoint(market.lat, market.lon)
@@ -129,14 +128,13 @@ fun OSMapView(
                     overlays.add(marker)
                 }
 
-                // Marcador ubicación actual
+                // your ubication
                 currentLocation?.let { (lat, lon) ->
                     val myMarker = Marker(this)
                     myMarker.position = GeoPoint(lat, lon)
                     myMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
                     myMarker.title = "Mi ubicación"
-                    // Puedes cambiar el icono con uno personalizado, por ejemplo:
-                    // myMarker.icon = ContextCompat.getDrawable(context, R.drawable.ic_my_location)?.toBitmapDescriptor()
+
                     overlays.add(myMarker)
                 }
             }

@@ -61,12 +61,13 @@ fun RegisterScreen(authViewModel: AuthViewModel) {
     val registrationResult by authViewModel.registrationResult.observeAsState()
     val errorMessage by authViewModel.errorMessage.observeAsState()
     val context = LocalContext.current
-    val userId by authViewModel.userId.observeAsState()
+    val newUserId by authViewModel.userId.observeAsState()
 
-    LaunchedEffect(userId) {
-        userId?.let {
+    LaunchedEffect(newUserId) {
+        newUserId?.let {
             val intent = Intent(context, PreferenceActivity::class.java).apply {
-                putExtra("USER_ID", it)
+                putExtra("id", newUserId) // Pass userId of the new user
+                putExtra("IS_NEW_USER", true) // Indicate that you are a new user
             }
             context.startActivity(intent)
             (context as RegisterActivity).finish()

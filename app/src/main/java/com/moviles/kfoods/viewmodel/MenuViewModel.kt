@@ -1,13 +1,14 @@
 package com.moviles.kfoods.viewmodel
 import android.util.Log
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import com.moviles.kfoods.models.dto.WeeklyMenuResponse
 import com.moviles.kfoods.network.RetrofitInstance.menuApi
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 import retrofit2.Response
 
 class MenuViewModelFactory(private val userId: Int) : ViewModelProvider.Factory {
@@ -33,7 +34,8 @@ class MenuViewModel(private val userId: Int) : ViewModel() {
 
     private val _errorMessage = MutableLiveData<String?>()
     val errorMessage: LiveData<String?> = _errorMessage
-
+    private val _generateMenuResult = MutableLiveData<Pair<Boolean, String>?>()
+    val generateMenuResult: LiveData<Pair<Boolean, String>?> = _generateMenuResult
     init {
         fetchWeeklyMenu()
     }
@@ -59,6 +61,35 @@ class MenuViewModel(private val userId: Int) : ViewModel() {
                 _isLoading.value = false
             }
         }
+    }
+
+    fun generateWeeklyMenu() {
+        _isLoading.value = true
+        viewModelScope.launch {
+            try {
+                val response = menuApi.generateWeeklyMenu(userId)
+                if (response.isSuccessful) {
+                    _generateMenuResult.value = Pair(true, response.body()?.message ?: "Menú generado exitosamente.")
+                    fetchWeeklyMenu()
+                } else {
+                    val errorBody = response.errorBody()?.string() ?: "Error desconocido"
+                    val errorMessage = try {
+                        JSONObject(errorBody).getString("message")
+                    } catch (e: Exception) {
+                        errorBody
+                    }
+                    _generateMenuResult.value = Pair(false, "Error ${response.code()}: $errorMessage")
+                }
+            } catch (e: Exception) {
+                _generateMenuResult.value = Pair(false, "Excepción: ${e.localizedMessage}")
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun clearGenerateMenuResult() {
+        _generateMenuResult.value = null
     }
 
 }

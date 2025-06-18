@@ -7,4 +7,5 @@
     <string name="title_activity_user">UserActivity</string>
     <string name="title_activity_preference" />
     <string name="title_activity_generate_menu">GenerateMenuActivity</string>
+    <string name="title_activity_recipe">RecipeActivity</string>
 </resources>
