@@ -1,13 +1,5 @@
 package com.moviles.kfoods.ui.theme.recipe
 
-import com.moviles.kfoods.R
-import com.moviles.kfoods.ui.theme.home.RemoteImage
-import android.os.Bundle
-import android.util.Log
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -39,7 +31,6 @@ import androidx.compose.material.icons.filled.DinnerDining
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.LunchDining
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -58,7 +49,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -66,7 +56,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -77,7 +66,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -87,10 +75,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.moviles.kfoods.R
 import com.moviles.kfoods.common.Constants.IMAGES_BASE_URL
 import com.moviles.kfoods.models.Recipe
 import com.moviles.kfoods.models.RecipeIngredient
-import com.moviles.kfoods.ui.theme.KFoodsTheme
+import com.moviles.kfoods.ui.theme.home.RemoteImage
 import com.moviles.kfoods.viewmodel.RecipeViewModel
 
 
@@ -151,16 +140,19 @@ fun RecipeScreen(
             )
         },
         floatingActionButton = {
-            navController?.let {
-                FloatingActionButton(
-                    onClick = { it.navigate("recipe_form") },
-                    containerColor = Color(0xFFFF5722),
-                    contentColor = Color.White
-                ) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "Agregar Receta")
+            if (userId != null && userId != -1) {
+                navController?.let {
+                    FloatingActionButton(
+                        onClick = { it.navigate("recipe_form") },
+                        containerColor = Color(0xFFFF5722),
+                        contentColor = Color.White
+                    ) {
+                        Icon(imageVector = Icons.Default.Add, contentDescription = "Agregar Receta")
+                    }
                 }
             }
         }
+
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -193,12 +185,14 @@ fun RecipeScreen(
                     RecipeList(
                         recipes = filteredRecipes,
                         navController = it,
-                        onDeleteClick = deleteRecipe
+                        onDeleteClick = deleteRecipe,
+                        userId = userId
                     )
                 } ?: RecipeList(
                     recipes = filteredRecipes,
                     navController = rememberNavController(),
-                    onDeleteClick = deleteRecipe
+                    onDeleteClick = deleteRecipe,
+                    userId = userId
                 )
             }
         }
@@ -390,7 +384,8 @@ fun FilterMenu(menuExpanded: MutableState<Boolean>, selectedPrepTime: MutableSta
 fun RecipeList(
     recipes: List<Recipe>,
     navController: NavController,
-    onDeleteClick: (Int) -> Unit // 👈 solo el ID
+    onDeleteClick: (Int) -> Unit,
+    userId: Int?
 ) {
     LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         items(recipes) { recipe ->
@@ -403,9 +398,11 @@ fun RecipeList(
                     navController.navigate("edit_recipe/${recipe.id}")
                 },
                 onDeleteClick = {
-                    onDeleteClick(recipe.id) // 👈 pasamos solo el ID
-                }
+                    onDeleteClick(recipe.id)
+                },
+                userId = userId
             )
+
         }
     }
 }
@@ -418,8 +415,9 @@ fun RecipeCard(
     recipe: Recipe,
     onClick: () -> Unit,
     onEditClick: () -> Unit,
-    onDeleteClick: () -> Unit  // new callback to delete
-) {
+    onDeleteClick: () -> Unit,
+    userId: Int?
+){
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -465,26 +463,29 @@ fun RecipeCard(
                     )
                 }
             }
-            IconButton(
-                onClick = onEditClick,
-                modifier = Modifier.size(32.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "Editar",
-                    tint = Color(0xFF1976D2)
-                )
+            if (userId != null && userId != -1) {
+                IconButton(
+                    onClick = onEditClick,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Editar",
+                        tint = Color(0xFF1976D2)
+                    )
+                }
+                IconButton(
+                    onClick = onDeleteClick,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Eliminar",
+                        tint = Color.Red
+                    )
+                }
             }
-            IconButton(
-                onClick = onDeleteClick,
-                modifier = Modifier.size(32.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Eliminar",
-                    tint = Color.Red
-                )
-            }
+
         }
     }
 }
