@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
+
     <application
         android:name=".MyApplication"
         android:allowBackup="true"
@@ -23,6 +24,11 @@
         <meta-data
             android:name="osmdroid.basePath"
             android:value="osmdroid" />
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyDhDZr7lqb_LifbS5Z2-Ztf3nsXlIFABFw" />
+
         <meta-data
             android:name="osmdroid.cachePath"
             android:value="osmdroid/cache" />
