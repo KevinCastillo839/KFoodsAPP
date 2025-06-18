@@ -82,6 +82,9 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
     implementation("org.osmdroid:osmdroid-android:6.1.14")
 
+    //google maps
+    implementation ("com.google.android.gms:play-services-maps:18.2.0")
+    implementation ("com.google.maps.android:maps-compose:2.11.4")
 
 
 

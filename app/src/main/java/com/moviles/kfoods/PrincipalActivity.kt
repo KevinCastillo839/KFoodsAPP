@@ -47,7 +47,7 @@ import androidx.navigation.navArgument
 import com.moviles.kfoods.factory.AuthViewModelFactory
 import com.moviles.kfoods.ui.theme.home.HomeScreen
 import com.moviles.kfoods.ui.theme.ingredient.CreateIngredientForm
-import com.moviles.kfoods.ui.theme.map.MapScreen
+import com.moviles.kfoods.ui.theme.map.GoogleMapScreen
 import com.moviles.kfoods.ui.theme.recipe.RecipeDetailsScreen
 import com.moviles.kfoods.ui.theme.recipe.RecipeForm
 import com.moviles.kfoods.ui.theme.recipe.RecipeScreen
@@ -204,7 +204,7 @@ fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
                     CartScreen()
                 }
                 composable("map") {
-                    MapScreen()
+                    GoogleMapScreen()
                 }
             }
         }
