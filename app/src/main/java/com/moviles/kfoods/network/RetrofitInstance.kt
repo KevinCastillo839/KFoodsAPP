@@ -5,7 +5,6 @@ import android.content.Context
 import com.moviles.kfoods.MyApplication
 import com.moviles.kfoods.common.Constants.API_BASE_URL
 import okhttp3.OkHttpClient
-import okhttp3.Interceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -74,5 +73,13 @@ object RetrofitInstance {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(IngredientApiService::class.java)
+    }
+    val unitMeasurementApi: UnitMeasurementApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(API_BASE_URL)
+            .client(client)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(UnitMeasurementApiService::class.java)
     }
 }

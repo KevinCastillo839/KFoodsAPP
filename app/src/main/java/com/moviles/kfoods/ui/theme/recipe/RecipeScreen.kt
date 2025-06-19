@@ -41,7 +41,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -136,22 +135,23 @@ fun RecipeScreen(
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                         )
                     }
-                }
-            )
-        },
-        floatingActionButton = {
-            if (userId != null && userId != -1) {
-                navController?.let {
-                    FloatingActionButton(
-                        onClick = { it.navigate("recipe_form") },
-                        containerColor = Color(0xFFFF5722),
-                        contentColor = Color.White
-                    ) {
-                        Icon(imageVector = Icons.Default.Add, contentDescription = "Agregar Receta")
+                },
+                actions = {
+                    if (userId != null && userId != -1) {
+                        IconButton(onClick = { navController?.navigate("recipe_form") }) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Agregar Receta",
+                                tint = Color(0xFFFF5722),
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
                     }
                 }
-            }
-        }
+
+            )
+
+        },
 
     ) { paddingValues ->
         Column(
