@@ -8,9 +8,18 @@ import okhttp3.OkHttpClient
 import okhttp3.Interceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import com.moviles.kfoods.models.dto.ShoppingListDto
+import retrofit2.http.GET
+import retrofit2.http.Path
+import com.moviles.kfoods.network.ShoppingListApiService
+
+// Interfaz para el servicio de lista de compras
+interface ShoppingListApiService {
+    @GET("by-user/{userId}")
+    suspend fun getWeeklyShoppingList(@Path("userId") userId: Int): ShoppingListDto
+}
 
 object RetrofitInstance {
-
     // Función para obtener el token de SharedPreferences
     private fun getAuthToken(): String? {
         val sharedPreferences = MyApplication.instance.getSharedPreferences("KFoodsPrefs", Context.MODE_PRIVATE)
@@ -43,6 +52,7 @@ object RetrofitInstance {
             .build()
             .create(ApiService::class.java)
     }
+
     val menuApi: MenuApiService by lazy {
         Retrofit.Builder()
             .baseUrl(API_BASE_URL)
@@ -75,4 +85,14 @@ object RetrofitInstance {
             .build()
             .create(IngredientApiService::class.java)
     }
+
+    val shoppingListApi: ShoppingListApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(API_BASE_URL)
+            .client(client)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(ShoppingListApiService::class.java)
+    }
+
 }

@@ -64,7 +64,6 @@
             android:theme="@style/Theme.KFoods">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -72,6 +71,11 @@
             android:name=".AllergyActivity"
             android:exported="false"
             android:label="Alergias"
+            android:theme="@style/Theme.KFoods" />
+        <activity
+            android:name=".ShoppingListActivity"
+            android:exported="false"
+            android:label="Lista de Compras"
             android:theme="@style/Theme.KFoods" />
     </application>
 
