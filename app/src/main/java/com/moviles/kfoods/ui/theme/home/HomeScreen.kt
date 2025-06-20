@@ -47,6 +47,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -143,14 +144,40 @@ fun HomeScreen(menuViewModel: MenuViewModel, userId: Int, onRecipeClick: (Int) -
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
         } else {
-            if (menuList.isEmpty()) {
-                Text(
-                    "No hay menús disponibles.",
-                    style = MaterialTheme.typography.bodyLarge.copy(color = Color.Gray),
-                    modifier = Modifier.padding(16.dp)
-                )
-                return@Column
+            if (!errorMessage.isNullOrEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Ocurrió un error al cargar los menús.\nPor favor, intentá nuevamente.",
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            color = MaterialTheme.colorScheme.error,
+                            fontWeight = FontWeight.SemiBold
+                        ),
+                        textAlign = TextAlign.Center
+                    )
+                }
+            } else if (menuList.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Todavía no tenés un menú generado.\nPresioná el botón para crear uno.",
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            color = Color(0xFF6D4C41),
+                            fontWeight = FontWeight.Medium
+                        ),
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
+
 
             HorizontalPager(
                 count = menuList.size,
@@ -325,10 +352,10 @@ fun HomeScreen(menuViewModel: MenuViewModel, userId: Int, onRecipeClick: (Int) -
                                                                 overflow = TextOverflow.Ellipsis
                                                             )
                                                             Spacer(modifier = Modifier.height(4.dp))
-                                                            Text(
-                                                                text = "Categoría: ${recipe.category}",
-                                                                style = MaterialTheme.typography.bodySmall.copy(color = Color.Gray)
-                                                            )
+//                                                            Text(
+//                                                                text = "Categoría: ${recipe.category}",
+//                                                                style = MaterialTheme.typography.bodySmall.copy(color = Color.Gray)
+//                                                            )
                                                         }
                                                     }
 
