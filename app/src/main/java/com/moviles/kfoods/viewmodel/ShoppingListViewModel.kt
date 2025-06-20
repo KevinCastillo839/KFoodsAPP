@@ -23,11 +23,16 @@ class ShoppingListViewModel : ViewModel() {
             _isLoading.value = true
             _errorMessage.value = null
             try {
-                val response = RetrofitInstance.shoppingListApi.getWeeklyShoppingList(userId)
-                if (response.success) {
-                    _shoppingList.value = response
+                val response = RetrofitInstance.shoppingListApi.getShoppingListByUserId(userId)
+                if (response.isSuccessful) {
+                    val shoppingListDto = response.body()
+                    if (shoppingListDto != null && shoppingListDto.success) {
+                        _shoppingList.value = shoppingListDto
+                    } else {
+                        _errorMessage.value = "Error al cargar la lista de compras"
+                    }
                 } else {
-                    _errorMessage.value = "Error al cargar la lista de compras"
+                    _errorMessage.value = "Error HTTP ${response.code()}: ${response.message()}"
                 }
             } catch (e: Exception) {
                 _errorMessage.value = e.message ?: "Error desconocido"

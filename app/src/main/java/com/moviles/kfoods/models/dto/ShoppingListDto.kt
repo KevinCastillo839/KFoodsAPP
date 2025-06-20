@@ -10,22 +10,10 @@ data class ShoppingListDto(
 
 data class SimpleShoppingListItemDto(
     @SerializedName("Ingredient")
-    val Ingredient: String,
+    val ingredient: String,
     @SerializedName("Unit")
-    val Unit: String,
+    val unit: String,
     @SerializedName("TotalQuantity")
-    val TotalQuantity: Double
+    val totalQuantity: Double
 )
-//package com.moviles.kfoods.models.dto
 
-//data class ShoppingListDto(
- //   val success: Boolean,
-   // val data: List<SimpleShoppingListItemDto>,
-    //val totalItems: Int
-//)
-
-//data class SimpleShoppingListItemDto(
- //   val IngredientName: String,
- //   val Unit: String,
-   // val TotalQuantity: Double
-//)

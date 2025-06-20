@@ -26,8 +26,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.moviles.kfoods.R
 import com.moviles.kfoods.models.dto.ShoppingListDto
 import com.moviles.kfoods.models.dto.SimpleShoppingListItemDto
@@ -39,14 +39,13 @@ fun ShoppingListScreen(
     navController: NavController,
     userId: Int,
     viewModel: ShoppingListViewModel = viewModel(),
-    modifier: Modifier = Modifier // Added modifier parameter
+    modifier: Modifier = Modifier
 ) {
     val shoppingList by viewModel.shoppingList.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
     val context = LocalContext.current
 
-    // Cargar la lista al iniciar
     LaunchedEffect(userId) {
         viewModel.getWeeklyShoppingList(userId)
     }
@@ -70,7 +69,6 @@ fun ShoppingListScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Back Button
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -84,7 +82,6 @@ fun ShoppingListScreen(
             }
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Logo
             Image(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "Logo circular",
@@ -96,7 +93,6 @@ fun ShoppingListScreen(
             )
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Content
             when {
                 isLoading -> {
                     CircularProgressIndicator(
@@ -111,7 +107,7 @@ fun ShoppingListScreen(
                         modifier = Modifier.padding(16.dp)
                     )
                 }
-                shoppingList?.data?.isEmpty() != false -> { // Fixed condition
+                shoppingList == null || shoppingList!!.data.isNullOrEmpty() -> {
                     Text(
                         text = "No hay elementos en la lista de compras",
                         style = MaterialTheme.typography.bodyLarge,
@@ -174,13 +170,13 @@ fun ShoppingListItemCard(item: SimpleShoppingListItemDto) {
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
-                text = item.Ingredient,
+                text = item.ingredient,
                 style = MaterialTheme.typography.titleMedium,
                 color = Color(0xFF1E1E1E)
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "${item.TotalQuantity} ${item.Unit}",
+                text = "${item.totalQuantity} ${item.unit}",
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color(0xFF666666)
             )
