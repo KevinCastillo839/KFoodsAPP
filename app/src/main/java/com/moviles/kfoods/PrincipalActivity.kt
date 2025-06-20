@@ -90,7 +90,7 @@ fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
                     0 -> navController.navigate("user/$userId")
                     1 -> navController.navigate("recipe")
                     2 -> navController.navigate("home/$userId")
-                    3 -> navController.navigate("cart/$userId") // Pasar userId al carrito
+                    3 -> navController.navigate("cart/shoppinglist/by-user/$userId")// Pasar userId al carrito
                     4 -> navController.navigate("map")
                 }
             }
@@ -189,7 +189,7 @@ fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
                 }
 
                 composable(
-                    route = "cart/{userId}",
+                    route = "cart/shoppinglist/by-user/{userId}",
                     arguments = listOf(navArgument("userId") { type = NavType.IntType })
                 ) { backStackEntry ->
                     val userId = backStackEntry.arguments?.getInt("userId") ?: -1

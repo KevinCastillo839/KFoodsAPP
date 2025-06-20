@@ -5,6 +5,24 @@ plugins {
 }
 
 android {
+    packagingOptions {
+        resources {
+            excludes += setOf(
+                "META-INF/INDEX.LIST",
+                "META-INF/DEPENDENCIES",
+                "META-INF/DEPENDENCY-LICENSE.txt",
+                "META-INF/LICENSE",
+                "META-INF/LICENSE.txt",
+                "META-INF/license.txt",
+                "META-INF/NOTICE",
+                "META-INF/NOTICE.txt",
+                "META-INF/notice.txt",
+                "META-INF/*.kotlin_module"
+            )
+        }
+    }
+
+
     namespace = "com.moviles.kfoods"
     compileSdk = 35
 
@@ -40,7 +58,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -51,6 +68,8 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.appcompat)
     implementation(libs.firebase.appdistribution.gradle)
+
+    // Tests
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -59,40 +78,36 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-
-    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
-    implementation ("androidx.core:core-ktx:1.10.1") // Asegúrate de tener la versión correcta
-    implementation ("androidx.activity:activity-compose:1.6.0")
-    implementation ("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
-    implementation ("androidx.compose.runtime:runtime-livedata:1.6.5")
-    implementation ("androidx.lifecycle:lifecycle-livedata-ktx:2.5.1")
-    implementation ("androidx.navigation:navigation-compose:2.6.0")
-
-    implementation ("androidx.compose.material:material-icons-extended")
-    implementation ("com.google.accompanist:accompanist-pager:0.32.0")
-    implementation ("com.google.android.gms:play-services-location:21.0.1")
-    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.6.4")
+    // Retrofit + Moshi + Gson
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
-    implementation ("com.google.android.gms:play-services-location:21.0.1")
-    implementation ("com.google.accompanist:accompanist-permissions:0.31.5-beta")
-    implementation ("org.osmdroid:osmdroid-android:6.1.16")
-    implementation("io.coil-kt:coil-compose:2.5.0")
-    implementation("androidx.compose.material3:material3:1.2.0")
+
+    // Lifecycle y ViewModel
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.5.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
+
+    // Compose y navegación
+    implementation("androidx.navigation:navigation-compose:2.6.0")
+    implementation("androidx.compose.runtime:runtime-livedata:1.7.4")
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
-    implementation("org.osmdroid:osmdroid-android:6.1.14")
-    implementation ("androidx.compose.runtime:runtime-livedata:1.7.4") // Ajusta la versión según tu proyecto
-    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
-    implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
-    implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1") // Para viewModel() en Compose
-    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4") // Para corrutinas
+    implementation("androidx.compose.material3:material3:1.2.0")
 
+    // Accompanist
+    implementation("com.google.accompanist:accompanist-pager:0.32.0")
+    implementation("com.google.accompanist:accompanist-permissions:0.31.5-beta")
 
+    // Google Play Services
+    implementation("com.google.android.gms:play-services-location:21.0.1")
 
+    // Corrutinas
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+    // Coil
+    implementation("io.coil-kt:coil-compose:2.5.0")
+
+    // OSMdroid (solo una versión)
+    implementation("org.osmdroid:osmdroid-android:6.1.16")
 
 }
