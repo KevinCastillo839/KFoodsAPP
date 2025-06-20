@@ -7,7 +7,7 @@ import retrofit2.http.Path
 
 interface ShoppingListApiService {
 
-    @GET("api/shoppinglist/by-user/{userId}")
+    @GET("shoppinglist/by-user/{userId}")
     suspend fun getShoppingListByUserId(
         @Path("userId") userId: Int
     ): Response<ShoppingListDto>

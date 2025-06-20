@@ -1,4 +1,5 @@
 import com.moviles.kfoods.models.Allergy
+import com.moviles.kfoods.models.ShoppingList
 import com.moviles.kfoods.models.DietaryGoal
 import com.moviles.kfoods.models.DietaryRestriction
 import com.moviles.kfoods.models.Preference
@@ -56,6 +57,7 @@ interface ApiService {
 
     @DELETE("api/allergy/{id}")
     suspend fun deleteAllergy(@Path("id") id: Int): Response<ApiResponse>
+
 
     @GET("api/shopping-list/by-user/{userId}")
     suspend fun getWeeklyShoppingList(@Path("userId") userId: Int): Response<ShoppingListDto>
