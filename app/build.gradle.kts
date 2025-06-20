@@ -99,8 +99,10 @@ dependencies {
     implementation("com.google.accompanist:accompanist-pager:0.32.0")
     implementation("com.google.accompanist:accompanist-permissions:0.31.5-beta")
 
-    // Google Play Services
-    implementation("com.google.android.gms:play-services-location:21.0.1")
+
+    //google maps
+    implementation ("com.google.android.gms:play-services-maps:18.2.0")
+    implementation ("com.google.maps.android:maps-compose:2.11.4")
 
     // Corrutinas
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")

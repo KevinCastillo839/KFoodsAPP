@@ -33,16 +33,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.moviles.kfoods.MainActivity
+import com.moviles.kfoods.PreferenceActivity
 import com.moviles.kfoods.R
 import com.moviles.kfoods.viewmodel.AuthViewModel
 import com.moviles.kfoods.viewmodel.RecipeViewModel
 
 @Composable
 fun UserScreen( authViewModel: AuthViewModel,
-                recipeViewModel: RecipeViewModel, // ← agrega esto
+                recipeViewModel: RecipeViewModel,
                 userId: Int,
                 navController: NavController  ) {
     val context = LocalContext.current
@@ -56,7 +56,7 @@ fun UserScreen( authViewModel: AuthViewModel,
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        // Imagen de fondo
+
         Image(
             painter = painterResource(id = R.drawable.image_main),
             contentDescription = "Fondo de pantalla",
@@ -86,7 +86,7 @@ fun UserScreen( authViewModel: AuthViewModel,
                 .padding(horizontal = 24.dp, vertical = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Foto de usuario
+
             Image(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "Foto de usuario",
@@ -98,7 +98,7 @@ fun UserScreen( authViewModel: AuthViewModel,
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Nombre del usuario
+            // user name
             Text(
                 text = userResult?.full_name ?: "Nombre de Usuario",
                 fontSize = 24.sp,
@@ -106,7 +106,7 @@ fun UserScreen( authViewModel: AuthViewModel,
                 color = Color(0xFF1E1E1E)
             )
 
-            // Correo del usuario
+            // user email
             Text(
                 text = userResult?.email ?: "Correo no disponible",
                 fontSize = 16.sp,
@@ -115,9 +115,15 @@ fun UserScreen( authViewModel: AuthViewModel,
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Botones existentes
+
             Button(
-                onClick = { /* TODO: Acción editar preferencias */ },
+                onClick = {
+                    val intent = Intent(context, PreferenceActivity::class.java).apply {
+                        putExtra("id", userId) // Pass userId of existing user
+                        putExtra("IS_NEW_USER", false) // Indicate that you are not a new user
+                    }
+                    context.startActivity(intent)
+                },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier
@@ -144,18 +150,18 @@ fun UserScreen( authViewModel: AuthViewModel,
 
 
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = { /* TODO: Acción borrar cuenta */ },
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-            ) {
-                Text(text = "Borrar Cuenta", color = Color.White, fontSize = 16.sp)
-            }
+//            Spacer(modifier = Modifier.height(16.dp))
+//
+//            Button(
+//                onClick = { /* TODO: Acción borrar cuenta */ },
+//                colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+//                shape = RoundedCornerShape(12.dp),
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .height(50.dp)
+//            ) {
+//                Text(text = "Borrar Cuenta", color = Color.White, fontSize = 16.sp)
+//            }
 
             Spacer(modifier = Modifier.height(16.dp))
 

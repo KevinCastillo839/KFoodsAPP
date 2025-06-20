@@ -45,7 +45,7 @@ class MenuViewModel(private val userId: Int) : ViewModel() {
         _isLoading.value = true
         viewModelScope.launch {
             try {
-                val response: Response<WeeklyMenuResponse> = menuApi.getWeeklyMenu(1)
+                val response: Response<WeeklyMenuResponse> = menuApi.getWeeklyMenu(userId)
 
                 Log.d("WeeklyMenu", response.toString())
 
@@ -53,10 +53,12 @@ class MenuViewModel(private val userId: Int) : ViewModel() {
                     _weeklyMenus.value = listOf(response.body()!!)
                     _errorMessage.value = null
                 } else {
-                    _errorMessage.value = "Error al obtener el menú semanal más reciente"
+                    _errorMessage.value = "Error al obtener el menú semanal más reciente. Por favor, inténtalo de nuevo."
                 }
             } catch (e: Exception) {
-                _errorMessage.value = "Error: ${e.localizedMessage}"
+                // Aquí transformamos el error técnico en uno amigable
+                _errorMessage.value = "No se pudo conectar con el servidor. Verifica tu conexión a internet e intenta nuevamente."
+                Log.e("fetchWeeklyMenu", "Error al obtener menú", e)
             } finally {
                 _isLoading.value = false
             }

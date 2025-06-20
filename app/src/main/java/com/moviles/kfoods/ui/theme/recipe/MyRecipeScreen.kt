@@ -57,6 +57,7 @@ import com.moviles.kfoods.models.dto.CreateRecipeRequestDto
 import com.moviles.kfoods.models.dto.IngredientDto
 import com.moviles.kfoods.viewmodel.IngredientViewModel
 import com.moviles.kfoods.viewmodel.RecipeViewModel
+import com.moviles.kfoods.viewmodel.UnitMeasurementViewModel
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -82,6 +83,12 @@ fun RecipeForm(
             recipeViewModel.getRecipesById(recipeId)
         }
     }
+    val unitViewModel: UnitMeasurementViewModel = viewModel()
+    val unitMeasurements by unitViewModel.unitMeasurements.collectAsState()
+
+    LaunchedEffect(Unit) {
+        unitViewModel.fetchUnitMeasurements()
+    }
 
     val ingredientList = ingredientViewModel.ingredientList
     val scrollState = rememberScrollState()
@@ -100,9 +107,10 @@ fun RecipeForm(
 
     data class IngredientSelection(
         val ingredient: IngredientDto,
-        var quantity: String = "",
-        var unit: String = ""
+        var quantity: Double = 0.0,
+        var unitId: Int? = null
     )
+
 
     val selectedIngredients = remember(recipeState) {
         mutableStateListOf<IngredientSelection>().apply {
@@ -110,20 +118,24 @@ fun RecipeForm(
             recipeState?.recipe_ingredients?.forEach { ri ->
                 val ingredient = ingredientList.find { it.id == ri.ingredient_id }
                 if (ingredient != null) {
-                    val parts = ri.quantity.split(" ", limit = 2)
-                    val qty = parts.getOrNull(0) ?: ""
-                    val unit = parts.getOrNull(1) ?: ""
-                    add(IngredientSelection(ingredient, qty, unit))
+                    add(
+                        IngredientSelection(
+                            ingredient = ingredient,
+                            quantity = ri.quantity,
+                            unitId = ri.unit_measurement_id
+                        )
+                    )
                 }
             }
         }
     }
 
+
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         imageUri = uri
     }
 
-    val categories = listOf("Desayuno", "ALmuerzo", "Cena")
+    val categories = listOf("Desayuno", "Almuerzo", "Cena")
 
     LaunchedEffect(Unit) {
         ingredientViewModel.fetchIngredients()
@@ -333,25 +345,57 @@ fun RecipeForm(
                             color = Color(0xFF1E1E1E)
                         )
 
+                        var quantityText by remember { mutableStateOf(selection.quantity.toString()) }
+
                         OutlinedTextField(
-                            value = selection.quantity,
-                            onValueChange = { newQty ->
-                                selectedIngredients[index] = selection.copy(quantity = newQty)
+                            value = quantityText,
+                            onValueChange = { newText ->
+                                quantityText = newText
+                                val parsed = newText.toDoubleOrNull()
+                                if (parsed != null) {
+                                    selectedIngredients[index] = selection.copy(quantity = parsed)
+                                }
                             },
                             label = { Text("Cantidad") },
                             shape = RoundedCornerShape(12.dp),
                             modifier = Modifier.fillMaxWidth()
                         )
 
-                        OutlinedTextField(
-                            value = selection.unit,
-                            onValueChange = { newUnit ->
-                                selectedIngredients[index] = selection.copy(unit = newUnit)
-                            },
-                            label = { Text("Unidad") },
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        )
+
+
+                        var unitDropdownExpanded by remember { mutableStateOf(false) }
+
+                        ExposedDropdownMenuBox(
+                            expanded = unitDropdownExpanded,
+                            onExpandedChange = { unitDropdownExpanded = !unitDropdownExpanded }
+                        ) {
+                            OutlinedTextField(
+                                readOnly = true,
+                                value = unitMeasurements.firstOrNull { it.id == selection.unitId }?.name ?: "",
+                                onValueChange = {},
+                                label = { Text("Unidad de medida") },
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(unitDropdownExpanded) },
+                                modifier = Modifier
+                                    .menuAnchor()
+                                    .fillMaxWidth()
+                            )
+
+                            ExposedDropdownMenu(
+                                expanded = unitDropdownExpanded,
+                                onDismissRequest = { unitDropdownExpanded = false }
+                            ) {
+                                unitMeasurements.forEach { unit ->
+                                    DropdownMenuItem(
+                                        text = { Text(unit.name) },
+                                        onClick = {
+                                            selectedIngredients[index] = selection.copy(unitId = unit.id)
+                                            unitDropdownExpanded = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
                     }
                 }
 
@@ -392,11 +436,13 @@ fun RecipeForm(
                                 id = 0,
                                 recipe_id = recipeState?.id ?: 0,
                                 ingredient_id = sel.ingredient.id,
-                                quantity = "${sel.quantity} ${sel.unit}".trim(),
+                                quantity = sel.quantity, // Ya es Double ✅
+                                unit_measurement_id = sel.unitId,
                                 created_at = nowIso,
                                 updated_at = nowIso
                             )
                         }
+
 
                         val gson = Gson()
                         val ingredientsJsonString = gson.toJson(ingredientsList)
@@ -440,6 +486,7 @@ fun RecipeForm(
         }
     }
 }
+
 @Composable
 fun ImagePicker(
     modifier: Modifier = Modifier,

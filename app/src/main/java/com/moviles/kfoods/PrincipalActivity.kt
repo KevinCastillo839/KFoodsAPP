@@ -45,7 +45,7 @@ import androidx.navigation.navArgument
 import com.moviles.kfoods.factory.AuthViewModelFactory
 import com.moviles.kfoods.ui.theme.home.HomeScreen
 import com.moviles.kfoods.ui.theme.ingredient.CreateIngredientForm
-import com.moviles.kfoods.ui.theme.map.MapScreen
+import com.moviles.kfoods.ui.theme.map.GoogleMapScreen
 import com.moviles.kfoods.ui.theme.recipe.RecipeDetailsScreen
 import com.moviles.kfoods.ui.theme.recipe.RecipeForm
 import com.moviles.kfoods.ui.theme.recipe.RecipeScreen
@@ -66,7 +66,8 @@ class PrincipalActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            val userId = intent.getIntExtra("id", -1) // Obtener userId del Intent
+            val userId = intent.getIntExtra("id", -1)
+
             KFoodsTheme {
                 PrincipalScreen(userId = userId, authViewModel = authViewModel)
             }
@@ -80,7 +81,9 @@ class PrincipalActivity : ComponentActivity() {
 fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
     var selectedItem by remember { mutableStateOf(2) } // 0: Perfil, 1: Recetas, 2: Inicio, 3: Carrito, 4: Mapa
 
-    val navController = rememberNavController()
+
+    val navController = rememberNavController() // // Create NavController
+    val context = LocalContext.current // Obtain the context
 
     Scaffold(
         bottomBar = {
@@ -156,7 +159,8 @@ fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
                 }
 
                 composable("create_ingredient") {
-                    CreateIngredientForm(navController = navController, viewModel = viewModel())
+
+                    CreateIngredientForm(navController = navController, viewModel = viewModel()) // use the form
                 }
 
                 composable(
@@ -200,7 +204,7 @@ fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
                 }
 
                 composable("map") {
-                    MapScreen()
+                    GoogleMapScreen()
                 }
             }
         }
@@ -211,10 +215,11 @@ fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
 @Composable
 fun BottomNavigationBar(selectedIndex: Int, onItemSelected: (Int) -> Unit) {
     NavigationBar(
-        containerColor = Color(0xFFFF5722),
+
+        containerColor = Color(0xFFFF5722), // orange background
         tonalElevation = 8.dp,
         modifier = Modifier.background(
-            color = Color(0xFFFF5722),
+            color = Color(0xFFFF5722), // orange background
             shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
         )
     ) {

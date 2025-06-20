@@ -10,15 +10,18 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitInstance {
-    // Función para obtener el token de SharedPreferences
+   
     private fun getAuthToken(): String? {
         val sharedPreferences =
             MyApplication.instance.getSharedPreferences("KFoodsPrefs", Context.MODE_PRIVATE)
         return sharedPreferences.getString("token", null)
     }
 
-    // Crear el cliente OkHttp con el interceptor
+   
     private val client = OkHttpClient.Builder()
+        .connectTimeout(20, java.util.concurrent.TimeUnit.SECONDS)
+        .readTimeout(20, java.util.concurrent.TimeUnit.SECONDS)
+        .writeTimeout(20, java.util.concurrent.TimeUnit.SECONDS)
         .addInterceptor { chain ->
             val token = getAuthToken()
             val originalRequest = chain.request()
@@ -33,7 +36,6 @@ object RetrofitInstance {
         }
         .build()
 
-    // Crear la instancia de Retrofit para cada servicio
     val api: ApiService by lazy {
         Retrofit.Builder()
             .baseUrl(API_BASE_URL)
@@ -79,12 +81,17 @@ object RetrofitInstance {
             .create(IngredientApiService::class.java)
     }
 
-    val shoppingListApi: ShoppingListApiService by lazy {
+    //val shoppingListApi: ShoppingListApiService by lazy {
+
+    val unitMeasurementApi: UnitMeasurementApiService by lazy {
         Retrofit.Builder()
             .baseUrl(API_BASE_URL)
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-            .create(ShoppingListApiService::class.java)
+
+            //.create(ShoppingListApiService::class.java)
+  
+            .create(UnitMeasurementApiService::class.java)
     }
 }

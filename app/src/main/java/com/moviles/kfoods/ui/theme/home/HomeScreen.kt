@@ -47,6 +47,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -73,12 +74,12 @@ fun HomeScreen(menuViewModel: MenuViewModel, userId: Int, onRecipeClick: (Int) -
 
     val weeklyPagerState = rememberPagerState()
 
-    val primaryColor = Color(0xFFFF5722) // Naranja vibrante
-    val secondaryColor = Color(0xFFFFE0B2) // Naranja claro pastel
-    val backgroundColor = Color.White // Fondo blanco
+    val primaryColor = Color(0xFFFF5722)
+    val secondaryColor = Color(0xFFFFE0B2)
+    val backgroundColor = Color.White
     val generateResult by menuViewModel.generateMenuResult.observeAsState()
     val context = LocalContext.current
-    // Mostrar Toast cuando generateMenuResult cambie y no sea null
+
     LaunchedEffect(generateResult) {
         generateResult?.let { (success, message) ->
             Toast.makeText(context, message, Toast.LENGTH_LONG).show()
@@ -93,8 +94,8 @@ fun HomeScreen(menuViewModel: MenuViewModel, userId: Int, onRecipeClick: (Int) -
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        Color(0xFFFFCCBC), // Naranja pastel suave
-                        Color(0xFFFFF3E0)  // Fondo más claro todavía
+                        Color(0xFFFFCCBC),
+                        Color(0xFFFFF3E0)
                     )
                 )
             )
@@ -105,20 +106,19 @@ fun HomeScreen(menuViewModel: MenuViewModel, userId: Int, onRecipeClick: (Int) -
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(80.dp) // altura suficiente para contener ambos
+                .height(80.dp)
         ) {
-            // Logo con posición absoluta a 24dp del borde izquierdo
             Image(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "Logo de la app",
                 modifier = Modifier
                     .size(60.dp)
-                    .offset(x = 24.dp) // ajusta este valor para moverlo más a la derecha
+                    .offset(x = 24.dp)
                     .align(Alignment.CenterStart)
                     .clip(CircleShape)
             )
 
-            // Botón centrado horizontal y verticalmente
+
             Button(
                 onClick = { menuViewModel.generateWeeklyMenu() },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),
@@ -144,14 +144,40 @@ fun HomeScreen(menuViewModel: MenuViewModel, userId: Int, onRecipeClick: (Int) -
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
         } else {
-            if (menuList.isEmpty()) {
-                Text(
-                    "No hay menús disponibles.",
-                    style = MaterialTheme.typography.bodyLarge.copy(color = Color.Gray),
-                    modifier = Modifier.padding(16.dp)
-                )
-                return@Column
+            if (!errorMessage.isNullOrEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Ocurrió un error al cargar los menús.\nPor favor, intentá nuevamente.",
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            color = MaterialTheme.colorScheme.error,
+                            fontWeight = FontWeight.SemiBold
+                        ),
+                        textAlign = TextAlign.Center
+                    )
+                }
+            } else if (menuList.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Todavía no tenés un menú generado.\nPresioná el botón para crear uno.",
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            color = Color(0xFF6D4C41),
+                            fontWeight = FontWeight.Medium
+                        ),
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
+
 
             HorizontalPager(
                 count = menuList.size,
@@ -163,7 +189,7 @@ fun HomeScreen(menuViewModel: MenuViewModel, userId: Int, onRecipeClick: (Int) -
                 val dailyMenus = weeklyMenuResponse.weekly_menus
                 val dailyPagerState = rememberPagerState()
 
-                // Obtener primer y último día para mostrar rango
+
                 val firstDay = dailyMenus.firstOrNull()?.day_of_week ?: ""
                 val lastDay = dailyMenus.lastOrNull()?.day_of_week ?: ""
 
@@ -174,7 +200,7 @@ fun HomeScreen(menuViewModel: MenuViewModel, userId: Int, onRecipeClick: (Int) -
                     shape = RoundedCornerShape(20.dp),
                     elevation = CardDefaults.cardElevation(8.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFFFFE8D8) // Naranja pastel súper suave, más claro que FFCCBC
+                        containerColor = Color(0xFFFFE8D8)
 
 
                     )
@@ -191,11 +217,11 @@ fun HomeScreen(menuViewModel: MenuViewModel, userId: Int, onRecipeClick: (Int) -
                         ) {
                             CreatedDateLabel(
                                 date = weeklyMenuResponse.created_at,
-                                primaryColor = Color(0xFFB71C1C) // rojo oscuro
+                                primaryColor = Color(0xFFB71C1C)
                             )
                         }
 
-                        // Imagen de fondo detrás de fecha y rango de días
+
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -211,7 +237,7 @@ fun HomeScreen(menuViewModel: MenuViewModel, userId: Int, onRecipeClick: (Int) -
                             Box(
                                 modifier = Modifier
                                     .matchParentSize()
-                                    .background(Color(0x80000000)) // negro semi-transparente
+                                    .background(Color(0x80000000))
                             )
 
                             Text(
@@ -239,7 +265,7 @@ fun HomeScreen(menuViewModel: MenuViewModel, userId: Int, onRecipeClick: (Int) -
                                 Column(
                                     modifier = Modifier.fillMaxSize()
                                 ) {
-                                    // No mostramos el día aquí para evitar repetición
+
 
                                     Text(
                                         text = dailyMenu.menu.name,
@@ -326,10 +352,10 @@ fun HomeScreen(menuViewModel: MenuViewModel, userId: Int, onRecipeClick: (Int) -
                                                                 overflow = TextOverflow.Ellipsis
                                                             )
                                                             Spacer(modifier = Modifier.height(4.dp))
-                                                            Text(
-                                                                text = "Categoría: ${recipe.category}",
-                                                                style = MaterialTheme.typography.bodySmall.copy(color = Color.Gray)
-                                                            )
+//                                                            Text(
+//                                                                text = "Categoría: ${recipe.category}",
+//                                                                style = MaterialTheme.typography.bodySmall.copy(color = Color.Gray)
+//                                                            )
                                                         }
                                                     }
 
@@ -384,7 +410,7 @@ fun RemoteImage(imageUrl: String, modifier: Modifier = Modifier) {
 fun FallbackImage(modifier: Modifier) {
     Box(
         modifier = modifier
-            .background(Color(0xFFFF8A50).copy(alpha = 0.3f)) // Naranja más claro y visible
+            .background(Color(0xFFFF8A50).copy(alpha = 0.3f))
             .clip(RoundedCornerShape(8.dp)),
         contentAlignment = Alignment.Center
     ) {
@@ -405,7 +431,7 @@ fun CreatedDateLabel(
         val parsedDate = LocalDateTime.parse(date, inputFormatter)
         outputFormatter.format(parsedDate)
     } catch (e: Exception) {
-        date // fallback si hay error
+        date // fallback
     }
 
     Row(
