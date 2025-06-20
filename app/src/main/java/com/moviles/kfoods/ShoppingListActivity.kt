@@ -1,5 +1,6 @@
 package com.moviles.kfoods
 
+import ShoppingListViewModel
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -12,7 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.moviles.kfoods.ui.theme.KFoodsTheme
 import com.moviles.kfoods.ui.theme.shoppingList.ShoppingListScreen
-import com.moviles.kfoods.viewmodel.ShoppingListViewModel
+
 
 class ShoppingListActivity : ComponentActivity() {
     private val viewModel: ShoppingListViewModel by viewModels()
