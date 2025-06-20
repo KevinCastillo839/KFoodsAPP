@@ -2,6 +2,7 @@ package com.moviles.kfoods.network
 
 import ApiService
 import android.content.Context
+//import com.google.firebase.appdistribution.gradle.ApiService
 import com.moviles.kfoods.MyApplication
 import com.moviles.kfoods.common.Constants.API_BASE_URL
 import okhttp3.OkHttpClient
@@ -9,16 +10,14 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitInstance {
-
-    // Función para obtener el token de SharedPreferences
+   
     private fun getAuthToken(): String? {
-        val sharedPreferences = MyApplication.instance.getSharedPreferences("KFoodsPrefs", Context.MODE_PRIVATE)
+        val sharedPreferences =
+            MyApplication.instance.getSharedPreferences("KFoodsPrefs", Context.MODE_PRIVATE)
         return sharedPreferences.getString("token", null)
     }
 
-
-    // Crear el cliente OkHttp con el interceptor
-// Crear el cliente OkHttp con timeout y el interceptor de token
+   
     private val client = OkHttpClient.Builder()
         .connectTimeout(20, java.util.concurrent.TimeUnit.SECONDS)
         .readTimeout(20, java.util.concurrent.TimeUnit.SECONDS)
@@ -37,8 +36,6 @@ object RetrofitInstance {
         }
         .build()
 
-
-    // Crear la instancia de Retrofit
     val api: ApiService by lazy {
         Retrofit.Builder()
             .baseUrl(API_BASE_URL)
@@ -47,6 +44,7 @@ object RetrofitInstance {
             .build()
             .create(ApiService::class.java)
     }
+
     val menuApi: MenuApiService by lazy {
         Retrofit.Builder()
             .baseUrl(API_BASE_URL)
@@ -55,6 +53,7 @@ object RetrofitInstance {
             .build()
             .create(MenuApiService::class.java)
     }
+
     val recipeApi: RecipeApiService by lazy {
         Retrofit.Builder()
             .baseUrl(API_BASE_URL)
@@ -63,6 +62,7 @@ object RetrofitInstance {
             .build()
             .create(RecipeApiService::class.java)
     }
+
     val preferenceApi: PreferenceApiService by lazy {
         Retrofit.Builder()
             .baseUrl(API_BASE_URL)
@@ -71,6 +71,7 @@ object RetrofitInstance {
             .build()
             .create(PreferenceApiService::class.java)
     }
+
     val ingredientApi: IngredientApiService by lazy {
         Retrofit.Builder()
             .baseUrl(API_BASE_URL)
@@ -79,12 +80,18 @@ object RetrofitInstance {
             .build()
             .create(IngredientApiService::class.java)
     }
+
+    //val shoppingListApi: ShoppingListApiService by lazy {
+
     val unitMeasurementApi: UnitMeasurementApiService by lazy {
         Retrofit.Builder()
             .baseUrl(API_BASE_URL)
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
+
+            //.create(ShoppingListApiService::class.java)
+  
             .create(UnitMeasurementApiService::class.java)
     }
 }

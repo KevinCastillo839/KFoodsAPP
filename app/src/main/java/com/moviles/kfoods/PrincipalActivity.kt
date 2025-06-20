@@ -1,6 +1,5 @@
 package com.moviles.kfoods
 
-
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -35,7 +34,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -51,38 +49,38 @@ import com.moviles.kfoods.ui.theme.map.GoogleMapScreen
 import com.moviles.kfoods.ui.theme.recipe.RecipeDetailsScreen
 import com.moviles.kfoods.ui.theme.recipe.RecipeForm
 import com.moviles.kfoods.ui.theme.recipe.RecipeScreen
+import com.moviles.kfoods.ui.theme.shoppingList.ShoppingListScreen
 import com.moviles.kfoods.ui.theme.user.UserScreen
 import com.moviles.kfoods.viewmodel.AuthViewModel
 import com.moviles.kfoods.viewmodel.MenuViewModel
 import com.moviles.kfoods.viewmodel.MenuViewModelFactory
 import com.moviles.kfoods.viewmodel.RecipeViewModel
 
-
 class PrincipalActivity : ComponentActivity() {
     private val authViewModel: AuthViewModel by viewModels {
-        AuthViewModelFactory(application) // use the factory
+        AuthViewModelFactory(application)
     }
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
             val userId = intent.getIntExtra("id", -1)
-//Receive the userId as a parameter
+
             KFoodsTheme {
-                PrincipalScreen(userId = userId)
-                // Pass the userId to PrincipalScreen
+                PrincipalScreen(userId = userId, authViewModel = authViewModel)
             }
         }
     }
-
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
-    var selectedItem by remember { mutableStateOf(2) } // 0: Profile, 1: recipe, 2: Home, 3: Cart, 4: Map
+    var selectedItem by remember { mutableStateOf(2) } // 0: Perfil, 1: Recetas, 2: Inicio, 3: Carrito, 4: Mapa
+
 
     val navController = rememberNavController() // // Create NavController
     val context = LocalContext.current // Obtain the context
@@ -91,14 +89,12 @@ fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
         bottomBar = {
             BottomNavigationBar(selectedItem) { index ->
                 selectedItem = index
-                // Change the screen when an item is selected
-
                 when (index) {
-                    0 -> navController.navigate("user/$userId") // Navigate to the User screen
-                    1 ->navController.navigate("recipe")
-                    2 ->navController.navigate("home/$userId")// Navigate to the home screen
-                    3 -> navController.navigate("cart")  // Navigate to the cart screen
-                    4 -> navController.navigate("map")  // Navigate to the map screen
+                    0 -> navController.navigate("user/$userId")
+                    1 -> navController.navigate("recipe")
+                    2 -> navController.navigate("home/$userId")
+                    3 -> navController.navigate("shoppinglist/by-user/$userId")// Pasar userId al carrito
+                    4 -> navController.navigate("map")
                 }
             }
         },
@@ -110,7 +106,6 @@ fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
                 .padding(paddingValues),
             contentAlignment = Alignment.Center
         ) {
-            // use nahost to navigate in the screens
             NavHost(navController = navController, startDestination = "home/$userId") {
                 composable(
                     route = "home/{userId}",
@@ -119,7 +114,6 @@ fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
                     val userId = backStackEntry.arguments?.getInt("userId") ?: -1
                     val factory = MenuViewModelFactory(userId)
                     val menuViewModel: MenuViewModel = viewModel(factory = factory)
-
                     HomeScreen(
                         menuViewModel = menuViewModel,
                         userId = userId,
@@ -129,10 +123,6 @@ fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
                     )
                 }
 
-
-
-
-// Pantalla de usuario
                 composable(
                     route = "user/{userId}",
                     arguments = listOf(navArgument("userId") { type = NavType.IntType })
@@ -141,56 +131,59 @@ fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
                     val recipeViewModel: RecipeViewModel = viewModel()
                     UserScreen(
                         authViewModel = authViewModel,
-                        recipeViewModel = recipeViewModel,    // 👈 pásalo aquí
+                        recipeViewModel = recipeViewModel,
                         userId = userId,
-                        navController = navController         // 👈 pásalo aquí
+                        navController = navController
                     )
                 }
+
                 composable("recipe_form") {
                     val recipeViewModel: RecipeViewModel = viewModel()
                     RecipeForm(
                         recipeViewModel = recipeViewModel,
                         navController = navController,
-                        userId = userId // pasamos el userId si lo necesitás en el formulario
+                        userId = userId
                     )
                 }
-                composable("edit_recipe/{recipeId}") { backStackEntry ->
-                    val id = backStackEntry.arguments?.getString("recipeId")?.toIntOrNull()
+
+                composable(
+                    route = "edit_recipe/{recipeId}",
+                    arguments = listOf(navArgument("recipeId") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val recipeId = backStackEntry.arguments?.getString("recipeId")?.toIntOrNull()
                     RecipeForm(
                         userId = userId,
                         navController = navController,
-                        recipeId = id
+                        recipeId = recipeId
                     )
                 }
+
                 composable("create_ingredient") {
+
                     CreateIngredientForm(navController = navController, viewModel = viewModel()) // use the form
                 }
-
-
-
 
                 composable(
                     route = "user_recipes/{userId}",
                     arguments = listOf(navArgument("userId") { type = NavType.IntType })
                 ) { backStackEntry ->
                     val userId = backStackEntry.arguments?.getInt("userId") ?: -1
-
                     RecipeScreen(
                         navController = navController,
                         userId = userId
                     )
                 }
 
-
                 composable("recipe") {
                     val recipeViewModel: RecipeViewModel = viewModel()
                     RecipeScreen(navController = navController, recipeViewModel = recipeViewModel)
                 }
+
                 composable(
                     route = "recipe_details/{id}",
                     arguments = listOf(navArgument("id") { type = NavType.IntType })
-                ) {
-                    val recipeId = it.arguments?.getInt("id") ?: -1
+                ) { backStackEntry ->
+                    val recipeId = backStackEntry.arguments?.getInt("id") ?: -1
                     val recipeViewModel: RecipeViewModel = viewModel()
                     RecipeDetailsScreen(
                         recipeId = recipeId,
@@ -199,10 +192,17 @@ fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
                     )
                 }
 
-
-                composable("cart") {
-                    CartScreen()
+                composable(
+                    route = "shoppinglist/by-user/{userId}",
+                    arguments = listOf(navArgument("userId") { type = NavType.IntType })
+                ) { backStackEntry ->
+                    val userId = backStackEntry.arguments?.getInt("userId") ?: -1
+                    ShoppingListScreen(
+                        navController = navController,
+                        userId = userId
+                    )
                 }
+
                 composable("map") {
                     GoogleMapScreen()
                 }
@@ -211,11 +211,11 @@ fun PrincipalScreen(userId: Int, authViewModel: AuthViewModel = viewModel()) {
     }
 }
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomNavigationBar(selectedIndex: Int, onItemSelected: (Int) -> Unit) {
     NavigationBar(
+
         containerColor = Color(0xFFFF5722), // orange background
         tonalElevation = 8.dp,
         modifier = Modifier.background(
@@ -240,7 +240,6 @@ fun BottomNavigationBar(selectedIndex: Int, onItemSelected: (Int) -> Unit) {
                         imageVector = item.icon,
                         contentDescription = item.label,
                         tint = if (selectedIndex == index) Color.Black else Color.DarkGray
-
                     )
                 }
             )
@@ -248,21 +247,14 @@ fun BottomNavigationBar(selectedIndex: Int, onItemSelected: (Int) -> Unit) {
     }
 }
 
-
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun CartScreen() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = "Pantalla de Carrito de Compras",
-            style = MaterialTheme.typography.headlineMedium,
-            textAlign = TextAlign.Center
-        )
-    }
+fun CartScreen(userId: Int, navController: androidx.navigation.NavController) {
+    ShoppingListScreen(
+        navController = navController,
+        userId = userId
+    )
 }
-
 
 @Composable
 fun KFoodsTheme(content: @Composable () -> Unit) {
@@ -271,6 +263,5 @@ fun KFoodsTheme(content: @Composable () -> Unit) {
         content = content
     )
 }
-
 
 data class NavigationItem(val label: String, val icon: ImageVector)
