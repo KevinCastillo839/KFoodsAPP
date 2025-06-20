@@ -90,8 +90,19 @@ object RetrofitInstance {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
 
-            //.create(ShoppingListApiService::class.java)
+
   
             .create(UnitMeasurementApiService::class.java)
+    }
+    val shoppingListApi: ShoppingListApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(API_BASE_URL)
+            .client(client)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+            //.create(ShoppingListApiService::class.java)
+
+            .create(ShoppingListApiService::class.java)
     }
 }
