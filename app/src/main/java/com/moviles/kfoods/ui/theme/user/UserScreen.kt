@@ -150,18 +150,18 @@ fun UserScreen( authViewModel: AuthViewModel,
 
 
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = { /* TODO: Acción borrar cuenta */ },
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-            ) {
-                Text(text = "Borrar Cuenta", color = Color.White, fontSize = 16.sp)
-            }
+//            Spacer(modifier = Modifier.height(16.dp))
+//
+//            Button(
+//                onClick = { /* TODO: Acción borrar cuenta */ },
+//                colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+//                shape = RoundedCornerShape(12.dp),
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .height(50.dp)
+//            ) {
+//                Text(text = "Borrar Cuenta", color = Color.White, fontSize = 16.sp)
+//            }
 
             Spacer(modifier = Modifier.height(16.dp))
 

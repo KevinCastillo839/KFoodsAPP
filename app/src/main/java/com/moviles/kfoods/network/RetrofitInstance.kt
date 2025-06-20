@@ -18,7 +18,11 @@ object RetrofitInstance {
 
 
     // Crear el cliente OkHttp con el interceptor
+// Crear el cliente OkHttp con timeout y el interceptor de token
     private val client = OkHttpClient.Builder()
+        .connectTimeout(20, java.util.concurrent.TimeUnit.SECONDS)
+        .readTimeout(20, java.util.concurrent.TimeUnit.SECONDS)
+        .writeTimeout(20, java.util.concurrent.TimeUnit.SECONDS)
         .addInterceptor { chain ->
             val token = getAuthToken()
             val originalRequest = chain.request()
@@ -32,6 +36,7 @@ object RetrofitInstance {
             chain.proceed(request)
         }
         .build()
+
 
     // Crear la instancia de Retrofit
     val api: ApiService by lazy {
