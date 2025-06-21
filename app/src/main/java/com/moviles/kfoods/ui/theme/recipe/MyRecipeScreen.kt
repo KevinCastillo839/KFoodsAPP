@@ -93,10 +93,20 @@ fun RecipeForm(
     val ingredientList = ingredientViewModel.ingredientList
     val scrollState = rememberScrollState()
 
-    val recipeName = remember { mutableStateOf(recipeState?.name ?: "") }
-    val instructions = remember { mutableStateOf(recipeState?.instructions ?: "") }
-    val category = remember { mutableStateOf(recipeState?.category ?: "") }
-    val prepTimeText = remember { mutableStateOf(recipeState?.preparation_time?.toString() ?: "") }
+    val recipeName = remember { mutableStateOf("") }
+    val instructions = remember { mutableStateOf("") }
+    val category = remember { mutableStateOf("") }
+    val prepTimeText = remember { mutableStateOf("") }
+
+    LaunchedEffect(recipeState) {
+        recipeState?.let { recipe ->
+            recipeName.value = recipe.name
+            instructions.value = recipe.instructions
+            category.value = recipe.category
+            prepTimeText.value = recipe.preparation_time?.toString() ?: ""
+        }
+    }
+
 
     val ingredientDropdownExpanded = remember { mutableStateOf(false) }
     val categoryDropdownExpanded = remember { mutableStateOf(false) }
@@ -111,24 +121,24 @@ fun RecipeForm(
         var unitId: Int? = null
     )
 
+    val selectedIngredients = remember { mutableStateListOf<IngredientSelection>() }
 
-    val selectedIngredients = remember(recipeState) {
-        mutableStateListOf<IngredientSelection>().apply {
-            clear()
-            recipeState?.recipe_ingredients?.forEach { ri ->
-                val ingredient = ingredientList.find { it.id == ri.ingredient_id }
-                if (ingredient != null) {
-                    add(
-                        IngredientSelection(
-                            ingredient = ingredient,
-                            quantity = ri.quantity,
-                            unitId = ri.unit_measurement_id
-                        )
+    LaunchedEffect(recipeState) {
+        selectedIngredients.clear()
+        recipeState?.recipe_ingredients?.forEach { ri ->
+            val ingredient = ingredientList.find { it.id == ri.ingredient_id }
+            if (ingredient != null) {
+                selectedIngredients.add(
+                    IngredientSelection(
+                        ingredient = ingredient,
+                        quantity = ri.quantity,
+                        unitId = ri.unit_measurement_id
                     )
-                }
+                )
             }
         }
     }
+
 
 
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
