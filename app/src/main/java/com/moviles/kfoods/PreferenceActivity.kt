@@ -199,7 +199,7 @@ fun PreferencesScreen(userId: Int, isNewUser: Boolean, viewModelA: AllergyViewMo
                 DietGoalSelector(dietaryGoal, dietGoal, onDietGoalSelected = { dietGoal = it })
                 Spacer(modifier = Modifier.height(8.dp))
 
-                AllergySelector(allergies, selectedAllergies)
+                AllergySelector(allergies, selectedAllergies,viewModelA)
                 Spacer(modifier = Modifier.height(16.dp))
 
                 AddAllergyButton(userId, context)
@@ -358,8 +358,13 @@ fun DietGoalSelector(dietaryGoal: List<DietaryGoal>,dietGoal: String,onDietGoalS
     }
 }
 @Composable
-fun AllergySelector(allergies: List<Allergy>,selectedAllergies: SnapshotStateList<Allergy>) {
+fun AllergySelector(allergies: List<Allergy>,selectedAllergies: SnapshotStateList<Allergy>,viewModelA: AllergyViewModel) {
     var isAllergiesExpanded by remember { mutableStateOf(false) }
+    LaunchedEffect(isAllergiesExpanded) {
+        if (isAllergiesExpanded) {
+            viewModelA.getAllergies()
+        }
+    }
 
     Box(modifier = Modifier.fillMaxWidth()) {
         OutlinedTextField(
